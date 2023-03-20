@@ -1,33 +1,23 @@
-# Project
+<p align="center">
+  <a href="https://github.com/microsoft/setup-msstore-cli/actions"><img alt="setup-msstore-cli status" src="https://github.com/microsoft/setup-msstore-cli/workflows/build-test/badge.svg"></a>
+</p>
 
-> This repo has been populated by an initial template to help get you started. Please
-> make sure to update the content to build a great experience for community-building.
+# Setup MSStore Developer CLI
 
-As the maintainer of this project, please make a few updates:
+This action sets up the [MSStore Developer CLI](https://github.com/microsoft/msstore-cli) on a runner.
+The MSStore Developer CLI is a command line interface that allows you to manage your Microsoft Store apps and in-app products.
 
-- Improving this README.MD file to provide a great experience
-- Updating SUPPORT.MD with content about this project's support experience
-- Understanding the security reporting process in SECURITY.MD
-- Remove this section from the README
-
-## Contributing
-
-This project welcomes contributions and suggestions.  Most contributions require you to agree to a
-Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
-the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com.
-
-When you submit a pull request, a CLA bot will automatically determine whether you need to provide
-a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions
-provided by the bot. You will only need to do this once across all repos using our CLA.
-
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
-For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
-contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
-
-## Trademarks
-
-This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft 
-trademarks or logos is subject to and must follow 
-[Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general).
-Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship.
-Any use of third-party trademarks or logos are subject to those third-party's policies.
+Example:
+  
+  ```yaml
+  name: MSStore CLI
+  on: [push]
+  jobs:
+    build:
+      runs-on: windows-latest
+      steps:
+      - uses: actions/checkout@v2
+      - uses: microsoft/setup-msstore-cli@v1
+      - run: msstore reconfigure --tenantId ${{ secrets.MSSTORE_TENANT_ID }} --sellerId ${{ secrets.MSSTORE_SELLER_ID }} --clientId ${{ secrets.MSSTORE_CLIENT_ID }} --clientSecret ${{ secrets.MSSTORE_CLIENT_SECRET
+      - run: msstore apps list
+  ```
