@@ -1,0 +1,14 @@
+name: 'setup-msstore-cli'
+description: 'Setup Microsoft Store Developer CLI'
+author: 'Microsoft'
+branding:
+  icon: 'upload-cloud'
+  color: 'blue'
+inputs:
+  version:
+    required: false
+    description: "The version of the Microsoft Store CLI to be downloaded and configured (e.g. 'v0.1.20')."
+    default: 'latest'
+runs:
+  using: 'node16'
+  main: 'dist/index.js'
