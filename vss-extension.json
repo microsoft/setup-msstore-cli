@@ -1,0 +1,41 @@
+{
+    "manifestVersion": 1,
+    "id": "microsoft-store-developer-cli-task",
+    "name": "Microsoft Store Developer CLI Tasks",
+    "version": "0.1.0",
+    "publisher": "Microsoft",
+    "public": false,
+    "targets": [
+        {
+            "id": "Microsoft.VisualStudio.Services"
+        }
+    ],    
+    "description": "Microsoft Store Developer CLI related tasks.",
+    "categories": [
+        "Azure Pipelines"
+    ],
+    "icons": {
+        "default": "images/extension-icon.png"
+    },
+    "repository": {
+        "type": "git",
+        "uri": "https://github.com/Microsoft/setup-msstore-cli"
+    },
+    "files": [
+        {
+            "path": "setup-msstore-cli-task"
+        }
+    ],
+    "contributions": [
+        {
+            "id": "microsoft-store-developer-cli-setup-task",
+            "type": "ms.vss-distributed-task.task",
+            "targets": [
+                "ms.vss-distributed-task.tasks"
+            ],
+            "properties": {
+                "name": "setup-msstore-cli-task"
+            }
+        }
+    ]
+}
