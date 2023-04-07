@@ -31,11 +31,13 @@
     "@actions/tool-cache": "^2.0.1",
     "azure-pipelines-task-lib": "^4.3.1",
     "azure-pipelines-tool-lib": "^2.0.4",
+    "q": "^1.5.1",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.1",
     "@types/node": "^18.15.11",
+    "@types/q": "^1.5.5",
     "@types/uuid": "^9.0.1",
     "@typescript-eslint/parser": "^5.57.1",
     "@vercel/ncc": "^0.36.1",
