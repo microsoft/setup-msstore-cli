@@ -28,9 +28,6 @@ jobs:
         with:
           node-version: 16.x
 
-      - name: Install TFX
-        run: npm install -g tfx-cli
-
       - name: Install dependencies
         run: npm ci
 

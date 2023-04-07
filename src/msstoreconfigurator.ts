@@ -1,21 +1,16 @@
+import * as core from '@actions/core'
+import * as tc from '@actions/tool-cache'
+import * as exec from '@actions/exec'
+import * as io from '@actions/io'
 import * as path from 'path'
 import * as os from 'os'
 import {v4 as uuidv4} from 'uuid'
-import * as fs from 'fs'
+import * as fs from 'fs-extra'
 
-export function getConfig(version: string): MSStoreCLIConfigurator {
-  return new MSStoreCLIConfigurator(version || 'latest')
-}
+const Version = 'version'
 
-export interface IPipeline {
-  debug(message: string): void
-  addPath(p: string): void
-  mkdirP(p: string): Promise<void>
-  downloadTool(url: string): Promise<string>
-  extractTar(archivePath: string, dest: string): Promise<string>
-  extractZip(archivePath: string, dest: string): Promise<string>
-  rmRF(p: string): Promise<void>
-  exec(command: string, args: string[]): Promise<number>
+export function getConfig(): MSStoreCLIConfigurator {
+  return new MSStoreCLIConfigurator(core.getInput(Version) || 'latest')
 }
 
 export class MSStoreCLIConfigurator {
@@ -25,7 +20,7 @@ export class MSStoreCLIConfigurator {
     this.version = version
   }
 
-  async configure(pipeline: IPipeline): Promise<void> {
+  async configure(): Promise<void> {
     this.validate()
 
     let platform: string
@@ -54,14 +49,14 @@ export class MSStoreCLIConfigurator {
 
     const downloadURL = `https://github.com/microsoft/msstore-cli/releases/${versionString}/MSStoreCLI-${platform}-${process.arch}${extension}`
 
-    pipeline.debug(`Downloading tool from ${downloadURL}`)
+    core.debug(`Downloading tool from ${downloadURL}`)
     let downloadPath: string | null = null
     let archivePath: string | null = null
     const randomDir: string = uuidv4()
     const tempDir = path.join(os.tmpdir(), 'tmp', 'runner', randomDir)
-    pipeline.debug(`Creating tempdir ${tempDir}`)
-    await pipeline.mkdirP(tempDir)
-    downloadPath = await pipeline.downloadTool(downloadURL)
+    core.debug(`Creating tempdir ${tempDir}`)
+    await io.mkdirP(tempDir)
+    downloadPath = await tc.downloadTool(downloadURL)
 
     let name: string
     if (process.platform === 'win32') {
@@ -71,35 +66,30 @@ export class MSStoreCLIConfigurator {
     }
 
     if (extension === '.tar.gz') {
-      archivePath = await pipeline.extractTar(downloadPath, tempDir)
+      archivePath = await tc.extractTar(downloadPath, tempDir)
     } else {
-      archivePath = await pipeline.extractZip(downloadPath, tempDir)
+      archivePath = await tc.extractZip(downloadPath, tempDir)
     }
 
-    await this.moveToPath(archivePath, name, pipeline)
+    await this.moveToPath(archivePath, name)
 
-    return pipeline.rmRF(tempDir)
+    return io.rmRF(tempDir)
   }
 
-  async moveToPath(
-    downloadPath: string,
-    name: string,
-    pipeline: IPipeline
-  ): Promise<void> {
+  async moveToPath(downloadPath: string, name: string): Promise<void> {
     const toolPath = binPath()
-    await pipeline.mkdirP(toolPath)
+    await io.mkdirP(toolPath)
 
     const dest = path.join(toolPath, name)
     if (!fs.existsSync(dest)) {
-      pipeline.rmRF(toolPath)
-      fs.renameSync(downloadPath, toolPath)
+      fs.moveSync(downloadPath, toolPath, {overwrite: true})
     }
 
     if (process.platform !== 'win32') {
-      await pipeline.exec('chmod', ['+x', dest])
+      await exec.exec('chmod', ['+x', dest])
     }
 
-    pipeline.addPath(toolPath)
+    core.addPath(toolPath)
   }
 
   validate(): void {
