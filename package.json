@@ -9,8 +9,10 @@
     "format": "prettier --write **/*.ts",
     "format-check": "prettier --check **/*.ts",
     "lint": "eslint src/**/*.ts",
-    "package-tfx": "tfx extension create --manifest-globs vss-extension.json",
-    "package": "ncc build lib/main.js --source-map --license licenses.txt && ncc build lib/azure-devops-task.js --source-map --license licenses.txt -o setup-msstore-cli-task && npm run package-tfx",
+    "create-tfx": "tfx extension create --manifest-globs vss-extension.json",
+    "package-gha": "ncc build lib/main.js --source-map --license licenses.txt",
+    "package-ado": "ncc build lib/azure-devops-task.js --source-map --license licenses.txt -o setup-msstore-cli-task && npm run create-tfx",
+    "package": "npm run package-gha && npm run package-ado",
     "test": "jest",
     "all": "npm run build && npm run format && npm run lint && npm run package && npm test"
   },
