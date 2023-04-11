@@ -1,6 +1,7 @@
 import * as taskLib from 'azure-pipelines-task-lib/task'
 import * as toolLib from 'azure-pipelines-tool-lib/tool'
 import * as msstoreconfigurator from './msstoreconfigurator'
+import * as fs from 'fs'
 
 const Version = 'version'
 
@@ -28,6 +29,10 @@ class AzurePipeline implements msstoreconfigurator.IPipeline {
   }
   async exec(command: string, args: string[]): Promise<number> {
     return taskLib.exec(command, args)
+  }
+  moveSync(downloadPath: string, toolPath: string): void {
+    this.rmRF(toolPath)
+    fs.renameSync(downloadPath, toolPath)
   }
 }
 

@@ -3,6 +3,7 @@ import * as tc from '@actions/tool-cache'
 import * as exec from '@actions/exec'
 import * as io from '@actions/io'
 import * as msstoreconfigurator from './msstoreconfigurator'
+import * as fs from 'fs-extra'
 
 const Version = 'version'
 
@@ -30,6 +31,9 @@ class GitHubPipeline implements msstoreconfigurator.IPipeline {
   }
   async exec(command: string, args: string[]): Promise<number> {
     return exec.exec(command, args)
+  }
+  moveSync(downloadPath: string, toolPath: string): void {
+    fs.moveSync(downloadPath, toolPath, {overwrite: true})
   }
 }
 

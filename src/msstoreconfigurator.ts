@@ -16,6 +16,7 @@ export interface IPipeline {
   extractZip(archivePath: string, dest: string): Promise<string>
   rmRF(p: string): Promise<void>
   exec(command: string, args: string[]): Promise<number>
+  moveSync(downloadPath: string, toolPath: string): void
 }
 
 export class MSStoreCLIConfigurator {
@@ -91,8 +92,7 @@ export class MSStoreCLIConfigurator {
 
     const dest = path.join(toolPath, name)
     if (!fs.existsSync(dest)) {
-      pipeline.rmRF(toolPath)
-      fs.renameSync(downloadPath, toolPath)
+      pipeline.moveSync(downloadPath, toolPath)
     }
 
     if (process.platform !== 'win32') {

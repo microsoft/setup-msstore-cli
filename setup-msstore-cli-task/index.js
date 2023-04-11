@@ -42,6 +42,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const taskLib = __importStar(__nccwpck_require__(347));
 const toolLib = __importStar(__nccwpck_require__(3681));
 const msstoreconfigurator = __importStar(__nccwpck_require__(3026));
+const fs = __importStar(__nccwpck_require__(7147));
 const Version = 'version';
 class AzurePipeline {
     debug(message) {
@@ -79,6 +80,10 @@ class AzurePipeline {
         return __awaiter(this, void 0, void 0, function* () {
             return taskLib.exec(command, args);
         });
+    }
+    moveSync(downloadPath, toolPath) {
+        this.rmRF(toolPath);
+        fs.renameSync(downloadPath, toolPath);
     }
 }
 function run() {
@@ -209,8 +214,7 @@ class MSStoreCLIConfigurator {
             yield pipeline.mkdirP(toolPath);
             const dest = path.join(toolPath, name);
             if (!fs.existsSync(dest)) {
-                pipeline.rmRF(toolPath);
-                fs.renameSync(downloadPath, toolPath);
+                pipeline.moveSync(downloadPath, toolPath);
             }
             if (process.platform !== 'win32') {
                 yield pipeline.exec('chmod', ['+x', dest]);

@@ -2,7 +2,7 @@
     "manifestVersion": 1,
     "id": "microsoft-store-developer-cli-task",
     "name": "Microsoft Store Developer CLI Tasks",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "publisher": "ms-aps-msstorecli",
     "public": false,
     "targets": [
