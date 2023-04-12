@@ -9,7 +9,7 @@
     "format": "prettier --write **/*.ts",
     "format-check": "prettier --check **/*.ts",
     "lint": "eslint src/**/*.ts",
-    "copy-license": "copy setup-msstore-cli-task/licenses.txt licenses.txt",
+    "copy-license": "copy setup-msstore-cli-task/licenses.txt licenses.txt || cp setup-msstore-cli-task/licenses.txt licenses.txt",
     "create-tfx": "npm run copy-license && tfx extension create --manifest-globs vss-extension.json",
     "package-gha": "ncc build lib/src/main.js --source-map --license licenses.txt",
     "package-ado": "ncc build lib/src/azure-devops-task.js --source-map --license licenses.txt -o setup-msstore-cli-task && npm run create-tfx",
