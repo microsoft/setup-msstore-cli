@@ -2,9 +2,9 @@
     "manifestVersion": 1,
     "id": "microsoft-store-developer-cli-task",
     "name": "Microsoft Store Developer CLI Tasks",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "publisher": "ms-aps-msstorecli",
-    "public": false,
+    "public": true,
     "targets": [
         {
             "id": "Microsoft.VisualStudio.Services"
@@ -20,6 +20,14 @@
     "repository": {
         "type": "git",
         "uri": "https://github.com/Microsoft/setup-msstore-cli"
+    },
+    "content": {
+        "details": {
+          "path": "README.md"
+        },
+        "thirdpartynotice": {
+            "path": "licenses.txt"
+        }
     },
     "files": [
         {
