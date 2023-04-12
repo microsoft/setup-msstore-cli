@@ -1,7 +1,7 @@
 require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 3109:
+/***/ 9536:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -40,11 +40,59 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
-const msstoreconfigurator = __importStar(__nccwpck_require__(3026));
+const tc = __importStar(__nccwpck_require__(7784));
+const exec = __importStar(__nccwpck_require__(1514));
+const io = __importStar(__nccwpck_require__(7436));
+const msstoreconfigurator = __importStar(__nccwpck_require__(9561));
+const fs = __importStar(__nccwpck_require__(5630));
+const Version = 'version';
+class GitHubPipeline {
+    debug(message) {
+        core.debug(message);
+    }
+    addPath(p) {
+        core.addPath(p);
+    }
+    mkdirP(p) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return io.mkdirP(p);
+        });
+    }
+    downloadTool(url) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return tc.downloadTool(url);
+        });
+    }
+    extractTar(archivePath, dest) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return tc.extractTar(archivePath, dest);
+        });
+    }
+    extractZip(archivePath, dest) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return tc.extractZip(archivePath, dest);
+        });
+    }
+    rmRF(p) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return io.rmRF(p);
+        });
+    }
+    exec(command, args) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return exec.exec(command, args);
+        });
+    }
+    moveSync(downloadPath, toolPath) {
+        fs.moveSync(downloadPath, toolPath, { overwrite: true });
+    }
+}
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            yield msstoreconfigurator.getConfig().configure();
+            yield msstoreconfigurator
+                .getConfig(core.getInput(Version))
+                .configure(new GitHubPipeline());
         }
         catch (error) {
             if (error instanceof Error)
@@ -57,7 +105,7 @@ run();
 
 /***/ }),
 
-/***/ 3026:
+/***/ 9561:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -96,24 +144,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.binPath = exports.MSStoreCLIConfigurator = exports.getConfig = void 0;
-const core = __importStar(__nccwpck_require__(2186));
-const tc = __importStar(__nccwpck_require__(7784));
-const exec = __importStar(__nccwpck_require__(1514));
-const io = __importStar(__nccwpck_require__(7436));
 const path = __importStar(__nccwpck_require__(1017));
 const os = __importStar(__nccwpck_require__(2037));
 const uuid_1 = __nccwpck_require__(5840);
-const fs = __importStar(__nccwpck_require__(5630));
-const Version = 'version';
-function getConfig() {
-    return new MSStoreCLIConfigurator(core.getInput(Version) || 'latest');
+const fs = __importStar(__nccwpck_require__(7147));
+function getConfig(version) {
+    return new MSStoreCLIConfigurator(version || 'latest');
 }
 exports.getConfig = getConfig;
 class MSStoreCLIConfigurator {
     constructor(version) {
         this.version = version;
     }
-    configure() {
+    configure(pipeline) {
         return __awaiter(this, void 0, void 0, function* () {
             this.validate();
             let platform;
@@ -141,14 +184,14 @@ class MSStoreCLIConfigurator {
                 versionString = `download/${this.version}`;
             }
             const downloadURL = `https://github.com/microsoft/msstore-cli/releases/${versionString}/MSStoreCLI-${platform}-${process.arch}${extension}`;
-            core.debug(`Downloading tool from ${downloadURL}`);
+            pipeline.debug(`Downloading tool from ${downloadURL}`);
             let downloadPath = null;
             let archivePath = null;
             const randomDir = (0, uuid_1.v4)();
             const tempDir = path.join(os.tmpdir(), 'tmp', 'runner', randomDir);
-            core.debug(`Creating tempdir ${tempDir}`);
-            yield io.mkdirP(tempDir);
-            downloadPath = yield tc.downloadTool(downloadURL);
+            pipeline.debug(`Creating tempdir ${tempDir}`);
+            yield pipeline.mkdirP(tempDir);
+            downloadPath = yield pipeline.downloadTool(downloadURL);
             let name;
             if (process.platform === 'win32') {
                 name = 'msstore.exe';
@@ -157,27 +200,27 @@ class MSStoreCLIConfigurator {
                 name = 'msstore';
             }
             if (extension === '.tar.gz') {
-                archivePath = yield tc.extractTar(downloadPath, tempDir);
+                archivePath = yield pipeline.extractTar(downloadPath, tempDir);
             }
             else {
-                archivePath = yield tc.extractZip(downloadPath, tempDir);
+                archivePath = yield pipeline.extractZip(downloadPath, tempDir);
             }
-            yield this.moveToPath(archivePath, name);
-            return io.rmRF(tempDir);
+            yield this.moveToPath(archivePath, name, pipeline);
+            return pipeline.rmRF(tempDir);
         });
     }
-    moveToPath(downloadPath, name) {
+    moveToPath(downloadPath, name, pipeline) {
         return __awaiter(this, void 0, void 0, function* () {
             const toolPath = binPath();
-            yield io.mkdirP(toolPath);
+            yield pipeline.mkdirP(toolPath);
             const dest = path.join(toolPath, name);
             if (!fs.existsSync(dest)) {
-                fs.moveSync(downloadPath, toolPath, { overwrite: true });
+                pipeline.moveSync(downloadPath, toolPath);
             }
             if (process.platform !== 'win32') {
-                yield exec.exec('chmod', ['+x', dest]);
+                yield pipeline.exec('chmod', ['+x', dest]);
             }
-            core.addPath(toolPath);
+            pipeline.addPath(toolPath);
         });
     }
     validate() {
@@ -10383,7 +10426,7 @@ module.exports = require("util");
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
 /******/ 	// This entry module is referenced by other modules so it can't be inlined
-/******/ 	var __webpack_exports__ = __nccwpck_require__(3109);
+/******/ 	var __webpack_exports__ = __nccwpck_require__(9536);
 /******/ 	module.exports = __webpack_exports__;
 /******/ 	
 /******/ })()

@@ -5,7 +5,7 @@ import {test} from '@jest/globals'
 
 test('test runs', () => {
   const np = process.execPath
-  const ip = path.join(__dirname, '..', 'lib', 'main.js')
+  const ip = path.join(__dirname, '..', 'lib', 'src', 'main.js')
   const options: cp.ExecFileSyncOptions = {
     env: process.env
   }
