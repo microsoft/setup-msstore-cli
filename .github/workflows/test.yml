@@ -26,6 +26,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - uses: actions/setup-dotnet@v3
+        if: ${{ env.ACT }}
+        with:
+          dotnet-version: '7.0.x'
       - uses: ./
       - run: msstore --version
 
