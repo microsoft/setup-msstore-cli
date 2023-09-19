@@ -2766,7 +2766,7 @@ module.exports = v4;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.updateReleaseName = exports.addBuildTag = exports.updateBuildNumber = exports.uploadBuildLog = exports.associateArtifact = exports.uploadArtifact = exports.logIssue = exports.logDetail = exports.setProgress = exports.setEndpoint = exports.addAttachment = exports.uploadSummary = exports.prependPath = exports.uploadFile = exports.CodeCoverageEnabler = exports.CodeCoveragePublisher = exports.TestPublisher = exports.getHttpCertConfiguration = exports.getHttpProxyConfiguration = exports.findMatch = exports.filter = exports.match = exports.tool = exports.execSync = exports.exec = exports.rmRF = exports.legacyFindFiles = exports.find = exports.retry = exports.mv = exports.cp = exports.ls = exports.which = exports.resolve = exports.mkdirP = exports.popd = exports.pushd = exports.cd = exports.checkPath = exports.cwd = exports.getAgentMode = exports.getPlatform = exports.osType = exports.writeFile = exports.exist = exports.stats = exports.debug = exports.error = exports.warning = exports.command = exports.setTaskVariable = exports.getTaskVariable = exports.getSecureFileTicket = exports.getSecureFileName = exports.getEndpointAuthorization = exports.getEndpointAuthorizationParameterRequired = exports.getEndpointAuthorizationParameter = exports.getEndpointAuthorizationSchemeRequired = exports.getEndpointAuthorizationScheme = exports.getEndpointDataParameterRequired = exports.getEndpointDataParameter = exports.getEndpointUrlRequired = exports.getEndpointUrl = exports.getPathInputRequired = exports.getPathInput = exports.filePathSupplied = exports.getDelimitedInput = exports.getBoolFeatureFlag = exports.getBoolInput = exports.getInputRequired = exports.getInput = exports.setSecret = exports.setVariable = exports.getVariables = exports.assertAgent = exports.getVariable = exports.loc = exports.setResourcePath = exports.setResult = exports.setErrStream = exports.setStdStream = exports.AgentHostedMode = exports.Platform = exports.FieldType = exports.ArtifactType = exports.IssueType = exports.TaskState = exports.TaskResult = void 0;
+exports.updateReleaseName = exports.addBuildTag = exports.updateBuildNumber = exports.uploadBuildLog = exports.associateArtifact = exports.uploadArtifact = exports.logIssue = exports.logDetail = exports.setProgress = exports.setEndpoint = exports.addAttachment = exports.uploadSummary = exports.prependPath = exports.uploadFile = exports.CodeCoverageEnabler = exports.CodeCoveragePublisher = exports.TestPublisher = exports.getHttpCertConfiguration = exports.getHttpProxyConfiguration = exports.findMatch = exports.filter = exports.match = exports.tool = exports.execSync = exports.exec = exports.execAsync = exports.rmRF = exports.legacyFindFiles = exports.find = exports.retry = exports.mv = exports.cp = exports.ls = exports.which = exports.resolve = exports.mkdirP = exports.popd = exports.pushd = exports.cd = exports.checkPath = exports.cwd = exports.getAgentMode = exports.getPlatform = exports.osType = exports.writeFile = exports.exist = exports.stats = exports.debug = exports.error = exports.warning = exports.command = exports.setTaskVariable = exports.getTaskVariable = exports.getSecureFileTicket = exports.getSecureFileName = exports.getEndpointAuthorization = exports.getEndpointAuthorizationParameterRequired = exports.getEndpointAuthorizationParameter = exports.getEndpointAuthorizationSchemeRequired = exports.getEndpointAuthorizationScheme = exports.getEndpointDataParameterRequired = exports.getEndpointDataParameter = exports.getEndpointUrlRequired = exports.getEndpointUrl = exports.getPathInputRequired = exports.getPathInput = exports.filePathSupplied = exports.getDelimitedInput = exports.getBoolFeatureFlag = exports.getBoolInput = exports.getInputRequired = exports.getInput = exports.setSecret = exports.setVariable = exports.getVariables = exports.assertAgent = exports.getVariable = exports.loc = exports.setResourcePath = exports.setResult = exports.setErrStream = exports.setStdStream = exports.AgentHostedMode = exports.Platform = exports.FieldType = exports.ArtifactType = exports.IssueType = exports.TaskState = exports.TaskResult = void 0;
 var shell = __nccwpck_require__(3516);
 var childProcess = __nccwpck_require__(2081);
 var fs = __nccwpck_require__(7147);
@@ -2829,22 +2829,6 @@ var AgentHostedMode;
 //-----------------------------------------------------
 exports.setStdStream = im._setStdStream;
 exports.setErrStream = im._setErrStream;
-//-----------------------------------------------------
-// Results
-//-----------------------------------------------------
-/**
- * Sets the result of the task.
- * Execution will continue.
- * If not set, task will be Succeeded.
- * If multiple calls are made to setResult the most pessimistic call wins (Failed) regardless of the order of calls.
- *
- * @param result    TaskResult enum of Succeeded, SucceededWithIssues, Failed, Cancelled or Skipped.
- * @param message   A message which will be logged as an error issue if the result is Failed.
- * @param done      Optional. Instructs the agent the task is done. This is helpful when child processes
- *                  may still be running and prevent node from fully exiting. This argument is supported
- *                  from agent version 2.142.0 or higher (otherwise will no-op).
- * @returns         void
- */
 function setResult(result, message, done) {
     exports.debug('task result: ' + TaskResult[result]);
     // add an error issue
@@ -4041,6 +4025,33 @@ exports.rmRF = rmRF;
  * Output will be streamed to the live console.
  * Returns promise with return code
  *
+ * @param     tool     path to tool to exec
+ * @param     args     an arg string or array of args
+ * @param     options  optional exec options.  See IExecOptions
+ * @returns   number
+ */
+function execAsync(tool, args, options) {
+    var tr = this.tool(tool);
+    tr.on('debug', function (data) {
+        exports.debug(data);
+    });
+    if (args) {
+        if (args instanceof Array) {
+            tr.arg(args);
+        }
+        else if (typeof (args) === 'string') {
+            tr.line(args);
+        }
+    }
+    return tr.execAsync(options);
+}
+exports.execAsync = execAsync;
+/**
+ * Exec a tool.  Convenience wrapper over ToolRunner to exec with args in one call.
+ * Output will be streamed to the live console.
+ * Returns promise with return code
+ *
+ * @deprecated Use the {@link execAsync} method that returns a native Javascript Promise instead
  * @param     tool     path to tool to exec
  * @param     args     an arg string or array of args
  * @param     options  optional exec options.  See IExecOptions
@@ -5456,6 +5467,184 @@ var ToolRunner = /** @class */ (function (_super) {
         result['windowsVerbatimArguments'] = options.windowsVerbatimArguments || this._isCmdFile();
         return result;
     };
+    ToolRunner.prototype.execWithPipingAsync = function (pipeOutputToTool, options) {
+        var _this = this;
+        this._debug('exec tool: ' + this.toolPath);
+        this._debug('arguments:');
+        this.args.forEach(function (arg) {
+            _this._debug('   ' + arg);
+        });
+        var success = true;
+        var optionsNonNull = this._cloneExecOptions(options);
+        if (!optionsNonNull.silent) {
+            optionsNonNull.outStream.write(this._getCommandString(optionsNonNull) + os.EOL);
+        }
+        var cp;
+        var toolPath = pipeOutputToTool.toolPath;
+        var toolPathFirst;
+        var successFirst = true;
+        var returnCodeFirst;
+        var fileStream;
+        var waitingEvents = 0; // number of process or stream events we are waiting on to complete
+        var returnCode = 0;
+        var error;
+        toolPathFirst = this.toolPath;
+        // Following node documentation example from this link on how to pipe output of one process to another
+        // https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options
+        //start the child process for both tools
+        waitingEvents++;
+        var cpFirst = child.spawn(this._getSpawnFileName(optionsNonNull), this._getSpawnArgs(optionsNonNull), this._getSpawnOptions(optionsNonNull));
+        waitingEvents++;
+        cp = child.spawn(pipeOutputToTool._getSpawnFileName(optionsNonNull), pipeOutputToTool._getSpawnArgs(optionsNonNull), pipeOutputToTool._getSpawnOptions(optionsNonNull));
+        fileStream = this.pipeOutputToFile ? fs.createWriteStream(this.pipeOutputToFile) : null;
+        return new Promise(function (resolve, reject) {
+            var _a, _b, _c, _d;
+            if (fileStream) {
+                waitingEvents++;
+                fileStream.on('finish', function () {
+                    waitingEvents--; //file write is complete
+                    fileStream = null;
+                    if (waitingEvents == 0) {
+                        if (error) {
+                            reject(error);
+                        }
+                        else {
+                            resolve(returnCode);
+                        }
+                    }
+                });
+                fileStream.on('error', function (err) {
+                    waitingEvents--; //there were errors writing to the file, write is done
+                    _this._debug("Failed to pipe output of " + toolPathFirst + " to file " + _this.pipeOutputToFile + ". Error = " + err);
+                    fileStream = null;
+                    if (waitingEvents == 0) {
+                        if (error) {
+                            reject(error);
+                        }
+                        else {
+                            resolve(returnCode);
+                        }
+                    }
+                });
+            }
+            //pipe stdout of first tool to stdin of second tool
+            (_a = cpFirst.stdout) === null || _a === void 0 ? void 0 : _a.on('data', function (data) {
+                var _a;
+                try {
+                    if (fileStream) {
+                        fileStream.write(data);
+                    }
+                    (_a = cp.stdin) === null || _a === void 0 ? void 0 : _a.write(data);
+                }
+                catch (err) {
+                    _this._debug('Failed to pipe output of ' + toolPathFirst + ' to ' + toolPath);
+                    _this._debug(toolPath + ' might have exited due to errors prematurely. Verify the arguments passed are valid.');
+                }
+            });
+            (_b = cpFirst.stderr) === null || _b === void 0 ? void 0 : _b.on('data', function (data) {
+                if (fileStream) {
+                    fileStream.write(data);
+                }
+                successFirst = !optionsNonNull.failOnStdErr;
+                if (!optionsNonNull.silent) {
+                    var s = optionsNonNull.failOnStdErr ? optionsNonNull.errStream : optionsNonNull.outStream;
+                    s.write(data);
+                }
+            });
+            cpFirst.on('error', function (err) {
+                var _a;
+                waitingEvents--; //first process is complete with errors
+                if (fileStream) {
+                    fileStream.end();
+                }
+                (_a = cp.stdin) === null || _a === void 0 ? void 0 : _a.end();
+                error = new Error(toolPathFirst + ' failed. ' + err.message);
+                if (waitingEvents == 0) {
+                    reject(error);
+                }
+            });
+            cpFirst.on('close', function (code, signal) {
+                var _a;
+                waitingEvents--; //first process is complete
+                if (code != 0 && !optionsNonNull.ignoreReturnCode) {
+                    successFirst = false;
+                    returnCodeFirst = code;
+                    returnCode = returnCodeFirst;
+                }
+                _this._debug('success of first tool:' + successFirst);
+                if (fileStream) {
+                    fileStream.end();
+                }
+                (_a = cp.stdin) === null || _a === void 0 ? void 0 : _a.end();
+                if (waitingEvents == 0) {
+                    if (error) {
+                        reject(error);
+                    }
+                    else {
+                        resolve(returnCode);
+                    }
+                }
+            });
+            var stdbuffer = '';
+            (_c = cp.stdout) === null || _c === void 0 ? void 0 : _c.on('data', function (data) {
+                _this.emit('stdout', data);
+                if (!optionsNonNull.silent) {
+                    optionsNonNull.outStream.write(data);
+                }
+                _this._processLineBuffer(data, stdbuffer, function (line) {
+                    _this.emit('stdline', line);
+                });
+            });
+            var errbuffer = '';
+            (_d = cp.stderr) === null || _d === void 0 ? void 0 : _d.on('data', function (data) {
+                _this.emit('stderr', data);
+                success = !optionsNonNull.failOnStdErr;
+                if (!optionsNonNull.silent) {
+                    var s = optionsNonNull.failOnStdErr ? optionsNonNull.errStream : optionsNonNull.outStream;
+                    s.write(data);
+                }
+                _this._processLineBuffer(data, errbuffer, function (line) {
+                    _this.emit('errline', line);
+                });
+            });
+            cp.on('error', function (err) {
+                waitingEvents--; //process is done with errors
+                error = new Error(toolPath + ' failed. ' + err.message);
+                if (waitingEvents == 0) {
+                    reject(error);
+                }
+            });
+            cp.on('close', function (code, signal) {
+                waitingEvents--; //process is complete
+                _this._debug('rc:' + code);
+                returnCode = code;
+                if (stdbuffer.length > 0) {
+                    _this.emit('stdline', stdbuffer);
+                }
+                if (errbuffer.length > 0) {
+                    _this.emit('errline', errbuffer);
+                }
+                if (code != 0 && !optionsNonNull.ignoreReturnCode) {
+                    success = false;
+                }
+                _this._debug('success:' + success);
+                if (!successFirst) { //in the case output is piped to another tool, check exit code of both tools
+                    error = new Error(toolPathFirst + ' failed with return code: ' + returnCodeFirst);
+                }
+                else if (!success) {
+                    error = new Error(toolPath + ' failed with return code: ' + code);
+                }
+                if (waitingEvents == 0) {
+                    if (error) {
+                        reject(error);
+                    }
+                    else {
+                        resolve(returnCode);
+                    }
+                }
+            });
+        });
+    };
     ToolRunner.prototype.execWithPiping = function (pipeOutputToTool, options) {
         var _this = this;
         var _a, _b, _c, _d;
@@ -5703,6 +5892,104 @@ var ToolRunner = /** @class */ (function (_super) {
      * Output will be streamed to the live console.
      * Returns promise with return code
      *
+     * @param     tool     path to tool to exec
+     * @param     options  optional exec options.  See IExecOptions
+     * @returns   number
+     */
+    ToolRunner.prototype.execAsync = function (options) {
+        var _this = this;
+        var _a, _b, _c;
+        if (this.pipeOutputToTool) {
+            return this.execWithPipingAsync(this.pipeOutputToTool, options);
+        }
+        this._debug('exec tool: ' + this.toolPath);
+        this._debug('arguments:');
+        this.args.forEach(function (arg) {
+            _this._debug('   ' + arg);
+        });
+        var optionsNonNull = this._cloneExecOptions(options);
+        if (!optionsNonNull.silent) {
+            optionsNonNull.outStream.write(this._getCommandString(optionsNonNull) + os.EOL);
+        }
+        var state = new ExecState(optionsNonNull, this.toolPath);
+        state.on('debug', function (message) {
+            _this._debug(message);
+        });
+        var cp = child.spawn(this._getSpawnFileName(options), this._getSpawnArgs(optionsNonNull), this._getSpawnOptions(options));
+        this.childProcess = cp;
+        // it is possible for the child process to end its last line without a new line.
+        // because stdout is buffered, this causes the last line to not get sent to the parent
+        // stream. Adding this event forces a flush before the child streams are closed.
+        (_a = cp.stdout) === null || _a === void 0 ? void 0 : _a.on('finish', function () {
+            if (!optionsNonNull.silent) {
+                optionsNonNull.outStream.write(os.EOL);
+            }
+        });
+        var stdbuffer = '';
+        (_b = cp.stdout) === null || _b === void 0 ? void 0 : _b.on('data', function (data) {
+            _this.emit('stdout', data);
+            if (!optionsNonNull.silent) {
+                optionsNonNull.outStream.write(data);
+            }
+            _this._processLineBuffer(data, stdbuffer, function (line) {
+                _this.emit('stdline', line);
+            });
+        });
+        var errbuffer = '';
+        (_c = cp.stderr) === null || _c === void 0 ? void 0 : _c.on('data', function (data) {
+            state.processStderr = true;
+            _this.emit('stderr', data);
+            if (!optionsNonNull.silent) {
+                var s = optionsNonNull.failOnStdErr ? optionsNonNull.errStream : optionsNonNull.outStream;
+                s.write(data);
+            }
+            _this._processLineBuffer(data, errbuffer, function (line) {
+                _this.emit('errline', line);
+            });
+        });
+        cp.on('error', function (err) {
+            state.processError = err.message;
+            state.processExited = true;
+            state.processClosed = true;
+            state.CheckComplete();
+        });
+        cp.on('exit', function (code, signal) {
+            state.processExitCode = code;
+            state.processExited = true;
+            _this._debug("Exit code " + code + " received from tool '" + _this.toolPath + "'");
+            state.CheckComplete();
+        });
+        cp.on('close', function (code, signal) {
+            state.processExitCode = code;
+            state.processExited = true;
+            state.processClosed = true;
+            _this._debug("STDIO streams have closed for tool '" + _this.toolPath + "'");
+            state.CheckComplete();
+        });
+        return new Promise(function (resolve, reject) {
+            state.on('done', function (error, exitCode) {
+                if (stdbuffer.length > 0) {
+                    _this.emit('stdline', stdbuffer);
+                }
+                if (errbuffer.length > 0) {
+                    _this.emit('errline', errbuffer);
+                }
+                cp.removeAllListeners();
+                if (error) {
+                    reject(error);
+                }
+                else {
+                    resolve(exitCode);
+                }
+            });
+        });
+    };
+    /**
+     * Exec a tool.
+     * Output will be streamed to the live console.
+     * Returns promise with return code
+     *
+     * @deprecated Use the `execAsync` method that returns a native Javascript promise instead
      * @param     tool     path to tool to exec
      * @param     options  optional exec options.  See IExecOptions
      * @returns   number
@@ -21894,7 +22181,7 @@ for (let i = 0; i < 256; ++i) {
 function unsafeStringify(arr, offset = 0) {
   // Note: Be careful editing this code!  It's been tuned for performance
   // and works in ways you may not expect. See https://github.com/uuidjs/uuid/pull/434
-  return (byteToHex[arr[offset + 0]] + byteToHex[arr[offset + 1]] + byteToHex[arr[offset + 2]] + byteToHex[arr[offset + 3]] + '-' + byteToHex[arr[offset + 4]] + byteToHex[arr[offset + 5]] + '-' + byteToHex[arr[offset + 6]] + byteToHex[arr[offset + 7]] + '-' + byteToHex[arr[offset + 8]] + byteToHex[arr[offset + 9]] + '-' + byteToHex[arr[offset + 10]] + byteToHex[arr[offset + 11]] + byteToHex[arr[offset + 12]] + byteToHex[arr[offset + 13]] + byteToHex[arr[offset + 14]] + byteToHex[arr[offset + 15]]).toLowerCase();
+  return byteToHex[arr[offset + 0]] + byteToHex[arr[offset + 1]] + byteToHex[arr[offset + 2]] + byteToHex[arr[offset + 3]] + '-' + byteToHex[arr[offset + 4]] + byteToHex[arr[offset + 5]] + '-' + byteToHex[arr[offset + 6]] + byteToHex[arr[offset + 7]] + '-' + byteToHex[arr[offset + 8]] + byteToHex[arr[offset + 9]] + '-' + byteToHex[arr[offset + 10]] + byteToHex[arr[offset + 11]] + byteToHex[arr[offset + 12]] + byteToHex[arr[offset + 13]] + byteToHex[arr[offset + 14]] + byteToHex[arr[offset + 15]];
 }
 
 function stringify(arr, offset = 0) {
