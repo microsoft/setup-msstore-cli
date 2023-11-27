@@ -14,7 +14,7 @@
     "package-gha": "ncc build lib/src/main.js --source-map --license licenses.txt -e typescript",
     "package-ado": "ncc build lib/src/azure-devops-task.js --source-map --license licenses.txt -e typescript -o setup-msstore-cli-task && npm run create-tfx",
     "package": "npm run package-gha && npm run package-ado",
-    "test": "jest",
+    "test": "jest --detectOpenHandles",
     "all": "npm run build && npm run format && npm run lint && npm run package && npm test"
   },
   "repository": {

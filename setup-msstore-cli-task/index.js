@@ -165,7 +165,7 @@ class MSStoreCLIConfigurator {
                 extension = '.zip';
             }
             else if (process.platform === 'darwin') {
-                platform = 'osx.12';
+                platform = 'osx';
                 extension = '.tar.gz';
             }
             else if (process.platform === 'linux') {
