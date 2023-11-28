@@ -165,7 +165,7 @@ class MSStoreCLIConfigurator {
                 extension = '.zip';
             }
             else if (process.platform === 'darwin') {
-                platform = 'osx.12';
+                platform = 'osx';
                 extension = '.tar.gz';
             }
             else if (process.platform === 'linux') {
@@ -7907,7 +7907,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.scrape = exports.extractZip = exports.extractTar = exports.extract7z = exports.cacheFile = exports.cacheDir = exports.downloadTool = exports.findLocalToolVersions = exports.findLocalTool = exports.evaluateVersions = exports.cleanVersion = exports.isExplicitVersion = exports.prependPath = exports.debug = void 0;
+exports.scrape = exports.extractZip = exports.extractTar = exports.extract7z = exports.cacheFile = exports.cacheDir = exports.downloadToolWithRetries = exports.downloadTool = exports.findLocalToolVersions = exports.findLocalTool = exports.evaluateVersions = exports.cleanVersion = exports.isExplicitVersion = exports.prependPath = exports.debug = void 0;
 const httpm = __nccwpck_require__(5538);
 const path = __nccwpck_require__(1017);
 const os = __nccwpck_require__(2037);
@@ -8103,7 +8103,7 @@ function downloadTool(url, fileName, handlers, additionalHeaders) {
                 }
                 // make sure that the folder exists
                 tl.mkdirP(path.dirname(destPath));
-                console.log(tl.loc('TOOL_LIB_Downloading', url));
+                console.log(tl.loc('TOOL_LIB_Downloading', url.replace(/sig=[^&]*/, "sig=-REDACTED-")));
                 tl.debug('destination ' + destPath);
                 if (fs.existsSync(destPath)) {
                     throw new Error("Destination file path already exists");
@@ -8179,6 +8179,28 @@ function downloadTool(url, fileName, handlers, additionalHeaders) {
     });
 }
 exports.downloadTool = downloadTool;
+function downloadToolWithRetries(url, fileName, handlers, additionalHeaders, maxAttempts = 3, retryInterval = 500) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let attempt = 1;
+        let destinationPath = '';
+        while (attempt <= maxAttempts && destinationPath == '') {
+            try {
+                destinationPath = yield downloadTool(url, fileName, handlers, additionalHeaders);
+            }
+            catch (err) {
+                if (attempt === maxAttempts)
+                    throw err;
+                const attemptInterval = attempt * retryInterval;
+                // Error will be shown in downloadTool.
+                tl.debug(`Attempt ${attempt} failed. Retrying after ${attemptInterval} ms`);
+                yield delay(attemptInterval);
+                attempt++;
+            }
+        }
+        return destinationPath;
+    });
+}
+exports.downloadToolWithRetries = downloadToolWithRetries;
 //---------------------
 // Size functions
 //---------------------
@@ -8296,12 +8318,12 @@ exports.cacheFile = cacheFile;
  * @param dest     destination directory. Optional.
  * @param _7zPath  path to 7zr.exe. Optional, for long path support. Most .7z archives do not have this
  * problem. If your .7z archive contains very long paths, you can pass the path to 7zr.exe which will
- * gracefully handle long paths. By default 7zdec.exe is used because it is a very small program and is
- * bundled with the tool lib. However it does not support long paths. 7zr.exe is the reduced command line
+ * gracefully handle long paths. By default 7z.exe is used because it is a very small program and is
+ * bundled with the tool lib. However it does not support long paths. 7z.exe is the reduced command line
  * interface, it is smaller than the full command line interface, and it does support long paths. At the
  * time of this writing, it is freely available from the LZMA SDK that is available on the 7zip website.
- * Be sure to check the current license agreement. If 7zr.exe is bundled with your task, then the path
- * to 7zr.exe can be pass to this function.
+ * Be sure to check the current license agreement. If 7z.exe is bundled with your task, then the path
+ * to 7z.exe can be pass to this function.
  * @param overwriteDest Overwrite files in destination catalog. Optional.
  * @returns        path to the destination directory
  */
@@ -8781,12 +8803,13 @@ module.exports = function callBoundIntrinsic(name, allowMissing) {
 
 var bind = __nccwpck_require__(8334);
 var GetIntrinsic = __nccwpck_require__(4538);
+var setFunctionLength = __nccwpck_require__(4056);
 
+var $TypeError = GetIntrinsic('%TypeError%');
 var $apply = GetIntrinsic('%Function.prototype.apply%');
 var $call = GetIntrinsic('%Function.prototype.call%');
 var $reflectApply = GetIntrinsic('%Reflect.apply%', true) || bind.call($call, $apply);
 
-var $gOPD = GetIntrinsic('%Object.getOwnPropertyDescriptor%', true);
 var $defineProperty = GetIntrinsic('%Object.defineProperty%', true);
 var $max = GetIntrinsic('%Math.max%');
 
@@ -8800,19 +8823,15 @@ if ($defineProperty) {
 }
 
 module.exports = function callBind(originalFunction) {
-	var func = $reflectApply(bind, $call, arguments);
-	if ($gOPD && $defineProperty) {
-		var desc = $gOPD(func, 'length');
-		if (desc.configurable) {
-			// original length, plus the receiver, minus any additional arguments (after the receiver)
-			$defineProperty(
-				func,
-				'length',
-				{ value: 1 + $max(0, originalFunction.length - (arguments.length - 1)) }
-			);
-		}
+	if (typeof originalFunction !== 'function') {
+		throw new $TypeError('a function is required');
 	}
-	return func;
+	var func = $reflectApply(bind, $call, arguments);
+	return setFunctionLength(
+		func,
+		1 + $max(0, originalFunction.length - (arguments.length - 1)),
+		true
+	);
 };
 
 var applyBind = function applyBind() {
@@ -8843,6 +8862,82 @@ module.exports = function (xs, fn) {
 
 var isArray = Array.isArray || function (xs) {
     return Object.prototype.toString.call(xs) === '[object Array]';
+};
+
+
+/***/ }),
+
+/***/ 4564:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+"use strict";
+
+
+var hasPropertyDescriptors = __nccwpck_require__(176)();
+
+var GetIntrinsic = __nccwpck_require__(4538);
+
+var $defineProperty = hasPropertyDescriptors && GetIntrinsic('%Object.defineProperty%', true);
+if ($defineProperty) {
+	try {
+		$defineProperty({}, 'a', { value: 1 });
+	} catch (e) {
+		// IE 8 has a broken defineProperty
+		$defineProperty = false;
+	}
+}
+
+var $SyntaxError = GetIntrinsic('%SyntaxError%');
+var $TypeError = GetIntrinsic('%TypeError%');
+
+var gopd = __nccwpck_require__(8501);
+
+/** @type {(obj: Record<PropertyKey, unknown>, property: PropertyKey, value: unknown, nonEnumerable?: boolean | null, nonWritable?: boolean | null, nonConfigurable?: boolean | null, loose?: boolean) => void} */
+module.exports = function defineDataProperty(
+	obj,
+	property,
+	value
+) {
+	if (!obj || (typeof obj !== 'object' && typeof obj !== 'function')) {
+		throw new $TypeError('`obj` must be an object or a function`');
+	}
+	if (typeof property !== 'string' && typeof property !== 'symbol') {
+		throw new $TypeError('`property` must be a string or a symbol`');
+	}
+	if (arguments.length > 3 && typeof arguments[3] !== 'boolean' && arguments[3] !== null) {
+		throw new $TypeError('`nonEnumerable`, if provided, must be a boolean or null');
+	}
+	if (arguments.length > 4 && typeof arguments[4] !== 'boolean' && arguments[4] !== null) {
+		throw new $TypeError('`nonWritable`, if provided, must be a boolean or null');
+	}
+	if (arguments.length > 5 && typeof arguments[5] !== 'boolean' && arguments[5] !== null) {
+		throw new $TypeError('`nonConfigurable`, if provided, must be a boolean or null');
+	}
+	if (arguments.length > 6 && typeof arguments[6] !== 'boolean') {
+		throw new $TypeError('`loose`, if provided, must be a boolean');
+	}
+
+	var nonEnumerable = arguments.length > 3 ? arguments[3] : null;
+	var nonWritable = arguments.length > 4 ? arguments[4] : null;
+	var nonConfigurable = arguments.length > 5 ? arguments[5] : null;
+	var loose = arguments.length > 6 ? arguments[6] : false;
+
+	/* @type {false | TypedPropertyDescriptor<unknown>} */
+	var desc = !!gopd && gopd(obj, property);
+
+	if ($defineProperty) {
+		$defineProperty(obj, property, {
+			configurable: nonConfigurable === null && desc ? desc.configurable : !nonConfigurable,
+			enumerable: nonEnumerable === null && desc ? desc.enumerable : !nonEnumerable,
+			value: value,
+			writable: nonWritable === null && desc ? desc.writable : !nonWritable
+		});
+	} else if (loose || (!nonEnumerable && !nonWritable && !nonConfigurable)) {
+		// must fall back to [[Set]], and was not explicitly asked to make non-enumerable, non-writable, or non-configurable
+		obj[property] = value; // eslint-disable-line no-param-reassign
+	} else {
+		throw new $SyntaxError('This environment does not support defining a property as non-configurable, non-writable, or non-enumerable.');
+	}
 };
 
 
@@ -9240,43 +9335,75 @@ exports.realpath = function realpath(p, cache, cb) {
 /* eslint no-invalid-this: 1 */
 
 var ERROR_MESSAGE = 'Function.prototype.bind called on incompatible ';
-var slice = Array.prototype.slice;
 var toStr = Object.prototype.toString;
+var max = Math.max;
 var funcType = '[object Function]';
+
+var concatty = function concatty(a, b) {
+    var arr = [];
+
+    for (var i = 0; i < a.length; i += 1) {
+        arr[i] = a[i];
+    }
+    for (var j = 0; j < b.length; j += 1) {
+        arr[j + a.length] = b[j];
+    }
+
+    return arr;
+};
+
+var slicy = function slicy(arrLike, offset) {
+    var arr = [];
+    for (var i = offset || 0, j = 0; i < arrLike.length; i += 1, j += 1) {
+        arr[j] = arrLike[i];
+    }
+    return arr;
+};
+
+var joiny = function (arr, joiner) {
+    var str = '';
+    for (var i = 0; i < arr.length; i += 1) {
+        str += arr[i];
+        if (i + 1 < arr.length) {
+            str += joiner;
+        }
+    }
+    return str;
+};
 
 module.exports = function bind(that) {
     var target = this;
-    if (typeof target !== 'function' || toStr.call(target) !== funcType) {
+    if (typeof target !== 'function' || toStr.apply(target) !== funcType) {
         throw new TypeError(ERROR_MESSAGE + target);
     }
-    var args = slice.call(arguments, 1);
+    var args = slicy(arguments, 1);
 
     var bound;
     var binder = function () {
         if (this instanceof bound) {
             var result = target.apply(
                 this,
-                args.concat(slice.call(arguments))
+                concatty(args, arguments)
             );
             if (Object(result) === result) {
                 return result;
             }
             return this;
-        } else {
-            return target.apply(
-                that,
-                args.concat(slice.call(arguments))
-            );
         }
+        return target.apply(
+            that,
+            concatty(args, arguments)
+        );
+
     };
 
-    var boundLength = Math.max(0, target.length - args.length);
+    var boundLength = max(0, target.length - args.length);
     var boundArgs = [];
     for (var i = 0; i < boundLength; i++) {
-        boundArgs.push('$' + i);
+        boundArgs[i] = '$' + i;
     }
 
-    bound = Function('binder', 'return function (' + boundArgs.join(',') + '){ return binder.apply(this,arguments); }')(binder);
+    bound = Function('binder', 'return function (' + joiny(boundArgs, ',') + '){ return binder.apply(this,arguments); }')(binder);
 
     if (target.prototype) {
         var Empty = function Empty() {};
@@ -9524,7 +9651,7 @@ var LEGACY_ALIASES = {
 };
 
 var bind = __nccwpck_require__(8334);
-var hasOwn = __nccwpck_require__(6339);
+var hasOwn = __nccwpck_require__(2157);
 var $concat = bind.call(Function.call, Array.prototype.concat);
 var $spliceApply = bind.call(Function.apply, Array.prototype.splice);
 var $replace = bind.call(Function.call, String.prototype.replace);
@@ -12152,6 +12279,71 @@ GlobSync.prototype._makeAbs = function (f) {
 
 /***/ }),
 
+/***/ 8501:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+"use strict";
+
+
+var GetIntrinsic = __nccwpck_require__(4538);
+
+var $gOPD = GetIntrinsic('%Object.getOwnPropertyDescriptor%', true);
+
+if ($gOPD) {
+	try {
+		$gOPD([], 'length');
+	} catch (e) {
+		// IE 8 has a broken gOPD
+		$gOPD = null;
+	}
+}
+
+module.exports = $gOPD;
+
+
+/***/ }),
+
+/***/ 176:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+"use strict";
+
+
+var GetIntrinsic = __nccwpck_require__(4538);
+
+var $defineProperty = GetIntrinsic('%Object.defineProperty%', true);
+
+var hasPropertyDescriptors = function hasPropertyDescriptors() {
+	if ($defineProperty) {
+		try {
+			$defineProperty({}, 'a', { value: 1 });
+			return true;
+		} catch (e) {
+			// IE 8 has a broken defineProperty
+			return false;
+		}
+	}
+	return false;
+};
+
+hasPropertyDescriptors.hasArrayLengthDefineBug = function hasArrayLengthDefineBug() {
+	// node v0.6 has a bug where array lengths can be Set but not Defined
+	if (!hasPropertyDescriptors()) {
+		return null;
+	}
+	try {
+		return $defineProperty([], 'length', { value: 1 }).length !== 1;
+	} catch (e) {
+		// In Firefox 4-22, defining length on an array throws an exception.
+		return true;
+	}
+};
+
+module.exports = hasPropertyDescriptors;
+
+
+/***/ }),
+
 /***/ 5894:
 /***/ ((module) => {
 
@@ -12242,15 +12434,18 @@ module.exports = function hasSymbols() {
 
 /***/ }),
 
-/***/ 6339:
+/***/ 2157:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 "use strict";
 
 
+var call = Function.prototype.call;
+var $hasOwn = Object.prototype.hasOwnProperty;
 var bind = __nccwpck_require__(8334);
 
-module.exports = bind.call(Function.call, Object.prototype.hasOwnProperty);
+/** @type {(o: {}, p: PropertyKey) => p is keyof o} */
+module.exports = bind.call(call, $hasOwn);
 
 
 /***/ }),
@@ -13568,6 +13763,14 @@ module.exports = function inspect_(obj, options, depth, seen) {
     }
     if (isString(obj)) {
         return markBoxed(inspect(String(obj)));
+    }
+    // note: in IE 8, sometimes `global !== window` but both are the prototypes of each other
+    /* eslint-env browser */
+    if (typeof window !== 'undefined' && obj === window) {
+        return '{ [object Window] }';
+    }
+    if (obj === global) {
+        return '{ [object globalThis] }';
     }
     if (!isDate(obj) && !isRegExp(obj)) {
         var ys = arrObjKeys(obj, inspect);
@@ -16910,6 +17113,55 @@ module.exports = function cmp (a, b) {
         if (isNaN(na) && !isNaN(nb)) return -1;
     }
     return 0;
+};
+
+
+/***/ }),
+
+/***/ 4056:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+"use strict";
+
+
+var GetIntrinsic = __nccwpck_require__(4538);
+var define = __nccwpck_require__(4564);
+var hasDescriptors = __nccwpck_require__(176)();
+var gOPD = __nccwpck_require__(8501);
+
+var $TypeError = GetIntrinsic('%TypeError%');
+var $floor = GetIntrinsic('%Math.floor%');
+
+module.exports = function setFunctionLength(fn, length) {
+	if (typeof fn !== 'function') {
+		throw new $TypeError('`fn` is not a function');
+	}
+	if (typeof length !== 'number' || length < 0 || length > 0xFFFFFFFF || $floor(length) !== length) {
+		throw new $TypeError('`length` must be a positive 32-bit integer');
+	}
+
+	var loose = arguments.length > 2 && !!arguments[2];
+
+	var functionLengthIsConfigurable = true;
+	var functionLengthIsWritable = true;
+	if ('length' in fn && gOPD) {
+		var desc = gOPD(fn, 'length');
+		if (desc && !desc.configurable) {
+			functionLengthIsConfigurable = false;
+		}
+		if (desc && !desc.writable) {
+			functionLengthIsWritable = false;
+		}
+	}
+
+	if (functionLengthIsConfigurable || functionLengthIsWritable || !loose) {
+		if (hasDescriptors) {
+			define(fn, 'length', length, true, true);
+		} else {
+			define(fn, 'length', length);
+		}
+	}
+	return fn;
 };
 
 
@@ -22716,7 +22968,7 @@ module.exports = require("zlib");
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"azure-pipelines-tool-lib","version":"2.0.4","description":"Azure Pipelines Tool Installer Lib for CI/CD Tasks","main":"tool.js","scripts":{"build":"node make.js build","test":"node make.js test","sample":"node make.js sample","units":"node make.js units"},"repository":{"type":"git","url":"git+https://github.com/microsoft/azure-pipelines-tool-lib.git"},"keywords":["VSTS"],"author":"Microsoft","license":"MIT","bugs":{"url":"https://github.com/microsoft/azure-pipelines-tool-lib/issues"},"homepage":"https://github.com/microsoft/azure-pipelines-tool-lib#readme","dependencies":{"@types/semver":"^5.3.0","@types/uuid":"^3.4.5","azure-pipelines-task-lib":"^4.1.0","semver":"^5.7.0","semver-compare":"^1.0.0","typed-rest-client":"^1.8.6","uuid":"^3.3.2"},"devDependencies":{"@types/mocha":"^5.2.7","@types/node":"^16.11.39","@types/shelljs":"^0.8.4","@types/xml2js":"^0.4.5","mocha":"^6.2.3","nock":"13.0.4","shelljs":"^0.8.5","typescript":"^4.0.5","xml2js":"^0.4.23"}}');
+module.exports = JSON.parse('{"name":"azure-pipelines-tool-lib","version":"2.0.7","description":"Azure Pipelines Tool Installer Lib for CI/CD Tasks","main":"tool.js","scripts":{"build":"node make.js build","test":"node make.js test","sample":"node make.js sample","units":"node make.js units"},"repository":{"type":"git","url":"git+https://github.com/microsoft/azure-pipelines-tool-lib.git"},"keywords":["VSTS"],"author":"Microsoft","license":"MIT","bugs":{"url":"https://github.com/microsoft/azure-pipelines-tool-lib/issues"},"homepage":"https://github.com/microsoft/azure-pipelines-tool-lib#readme","dependencies":{"@types/semver":"^5.3.0","@types/uuid":"^3.4.5","azure-pipelines-task-lib":"^4.1.0","semver":"^5.7.0","semver-compare":"^1.0.0","typed-rest-client":"^1.8.6","uuid":"^3.3.2"},"devDependencies":{"@types/mocha":"^5.2.7","@types/node":"^16.11.39","@types/shelljs":"^0.8.4","@types/xml2js":"^0.4.5","mocha":"^6.2.3","nock":"13.0.4","shelljs":"^0.8.5","typescript":"^4.0.5","xml2js":"^0.4.23"}}');
 
 /***/ })
 
