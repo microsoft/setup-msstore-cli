@@ -1,0 +1,85 @@
+trigger: none
+
+resources:
+  repositories:
+  - repository: 1ESPipelineTemplates
+    type: git
+    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    ref: refs/tags/release
+
+parameters:
+  - name: pools
+    type: object
+    default:
+    - name: Azure-Pipelines-1ESPT-ExDShared
+      image: windows-latest
+      os: windows
+    - name: Azure-Pipelines-1ESPT-ExDShared
+      image: ubuntu-latest
+      os: linux
+    - name: Azure Pipelines
+      image: macos-latest
+      os: macOS
+
+extends:
+  template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
+  parameters:
+    sdl:
+      sourceAnalysisPool:
+        name: Azure-Pipelines-1ESPT-ExDShared
+        image: windows-2022
+        os: windows
+    stages:
+    - stage: BuildAndTest
+      jobs:
+      - job: Build
+        templateContext:
+          outputs:
+          - output: pipelineArtifact
+            targetPath: $(Build.ArtifactStagingDirectory)
+            artifactName: vsix
+        pool:
+          name: Azure-Pipelines-1ESPT-ExDShared
+          image: ubuntu-latest
+          os: linux
+        steps:
+        - checkout: self
+        - script: npm install -g tfx-cli
+          displayName: Install TFX
+        - script: npm install
+          displayName: Install Dependencies
+        - script: npm run all
+          displayName: Build
+          env:
+            RUNNER_TEMP: $(Agent.TempDirectory)
+        - task: CopyFiles@2
+          displayName: Copying VSIX
+          inputs:
+            contents: "$(System.DefaultWorkingDirectory)/ms-aps-msstorecli.microsoft-store-developer-cli-task-*.vsix"
+            flattenFolders: True
+            targetFolder: $(Build.ArtifactStagingDirectory)
+      
+      - ${{ each pool in parameters.pools }}:
+        - job: Test_${{ pool.os }}
+          displayName: Tests (${{ pool.os }})
+          pool:
+            name: ${{ pool.name }}
+            image: ${{ pool.image }}
+            os: ${{ pool.os }}
+          steps:
+          - checkout: self
+          - task: UseDotNet@2
+            displayName: Setup .NET 8
+            inputs:
+              version: 8.0.x
+          - bash: |
+              MSSTORECLIPATH=$(node dist/index.js | grep "^::add-path::" | sed -e "s/^::add-path:://g")
+              if [ "$(expr substr $(uname -s) 1 10)" != "MINGW64_NT" ]; then
+                  MSSTORECLIPATH="$(echo $MSSTORECLIPATH | sed 's/C:/\/c/g' | sed 's/\\/\//g')/msstore"
+              else
+                  MSSTORECLIPATH="$(echo $MSSTORECLIPATH)\msstore.exe"
+              fi
+              $MSSTORECLIPATH --version
+            displayName: Run GHA Script and check version
+            env:
+              RUNNER_TEMP: $(Agent.TempDirectory)
