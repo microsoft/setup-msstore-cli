@@ -1,256 +1,6 @@
 require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 7896:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-const taskLib = __importStar(__nccwpck_require__(347));
-const toolLib = __importStar(__nccwpck_require__(3681));
-const msstoreconfigurator = __importStar(__nccwpck_require__(9561));
-const fs = __importStar(__nccwpck_require__(7147));
-const Version = 'version';
-class AzurePipeline {
-    debug(message) {
-        taskLib.debug(message);
-    }
-    addPath(p) {
-        taskLib.prependPath(p);
-    }
-    mkdirP(p) {
-        return __awaiter(this, void 0, void 0, function* () {
-            taskLib.mkdirP(p);
-        });
-    }
-    downloadTool(url) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return toolLib.downloadTool(url);
-        });
-    }
-    extractTar(archivePath, dest) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return toolLib.extractTar(archivePath, dest);
-        });
-    }
-    extractZip(archivePath, dest) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return toolLib.extractZip(archivePath, dest);
-        });
-    }
-    rmRF(p) {
-        return __awaiter(this, void 0, void 0, function* () {
-            taskLib.rmRF(p);
-        });
-    }
-    exec(command, args) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return taskLib.exec(command, args);
-        });
-    }
-    moveSync(downloadPath, toolPath) {
-        this.rmRF(toolPath);
-        fs.renameSync(downloadPath, toolPath);
-    }
-}
-function run() {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            yield msstoreconfigurator
-                .getConfig(taskLib.getInput(Version) || 'latest')
-                .configure(new AzurePipeline());
-        }
-        catch (err) {
-            if (err instanceof Error)
-                taskLib.setResult(taskLib.TaskResult.Failed, err.message);
-        }
-    });
-}
-run();
-
-
-/***/ }),
-
-/***/ 9561:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.binPath = exports.MSStoreCLIConfigurator = exports.getConfig = void 0;
-const path = __importStar(__nccwpck_require__(1017));
-const os = __importStar(__nccwpck_require__(2037));
-const uuid_1 = __nccwpck_require__(5840);
-const fs = __importStar(__nccwpck_require__(7147));
-function getConfig(version) {
-    return new MSStoreCLIConfigurator(version || 'latest');
-}
-exports.getConfig = getConfig;
-class MSStoreCLIConfigurator {
-    constructor(version) {
-        this.version = version;
-    }
-    configure(pipeline) {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.validate();
-            let platform;
-            let extension;
-            if (process.platform === 'win32') {
-                platform = 'win';
-                extension = '.zip';
-            }
-            else if (process.platform === 'darwin') {
-                platform = 'osx';
-                extension = '.tar.gz';
-            }
-            else if (process.platform === 'linux') {
-                platform = 'linux';
-                extension = '.tar.gz';
-            }
-            else {
-                throw new Error(`Unsupported platform: ${process.platform}`);
-            }
-            let versionString;
-            if (this.version === 'latest') {
-                versionString = `latest/download`;
-            }
-            else {
-                versionString = `download/${this.version}`;
-            }
-            const downloadURL = `https://github.com/microsoft/msstore-cli/releases/${versionString}/MSStoreCLI-${platform}-${process.arch}${extension}`;
-            pipeline.debug(`Downloading tool from ${downloadURL}`);
-            let downloadPath = null;
-            let archivePath = null;
-            const randomDir = (0, uuid_1.v4)();
-            const tempDir = path.join(os.tmpdir(), 'tmp', 'runner', randomDir);
-            pipeline.debug(`Creating tempdir ${tempDir}`);
-            yield pipeline.mkdirP(tempDir);
-            downloadPath = yield pipeline.downloadTool(downloadURL);
-            let name;
-            if (process.platform === 'win32') {
-                name = 'msstore.exe';
-            }
-            else {
-                name = 'msstore';
-            }
-            if (extension === '.tar.gz') {
-                archivePath = yield pipeline.extractTar(downloadPath, tempDir);
-            }
-            else {
-                archivePath = yield pipeline.extractZip(downloadPath, tempDir);
-            }
-            yield this.moveToPath(archivePath, name, pipeline);
-            return pipeline.rmRF(tempDir);
-        });
-    }
-    moveToPath(downloadPath, name, pipeline) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const toolPath = binPath();
-            yield pipeline.mkdirP(toolPath);
-            const dest = path.join(toolPath, name);
-            if (!fs.existsSync(dest)) {
-                pipeline.moveSync(downloadPath, toolPath);
-            }
-            if (process.platform !== 'win32') {
-                yield pipeline.exec('chmod', ['+x', dest]);
-            }
-            pipeline.addPath(toolPath);
-        });
-    }
-    validate() {
-        if (process.platform !== 'win32' &&
-            process.platform !== 'darwin' &&
-            process.platform !== 'linux') {
-            throw new Error(`Unsupported platform: ${process.platform}`);
-        }
-    }
-}
-exports.MSStoreCLIConfigurator = MSStoreCLIConfigurator;
-function binPath() {
-    let baseLocation;
-    if (process.platform === 'win32') {
-        baseLocation = process.env['USERPROFILE'] || 'C:\\';
-    }
-    else {
-        if (process.platform === 'darwin') {
-            baseLocation = '/Users';
-        }
-        else {
-            baseLocation = '/home';
-        }
-    }
-    return path.join(baseLocation, os.userInfo().username, 'msstorecli');
-}
-exports.binPath = binPath;
-
-
-/***/ }),
-
 /***/ 6526:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
@@ -2766,7 +2516,7 @@ module.exports = v4;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.updateReleaseName = exports.addBuildTag = exports.updateBuildNumber = exports.uploadBuildLog = exports.associateArtifact = exports.uploadArtifact = exports.logIssue = exports.logDetail = exports.setProgress = exports.setEndpoint = exports.addAttachment = exports.uploadSummary = exports.prependPath = exports.uploadFile = exports.CodeCoverageEnabler = exports.CodeCoveragePublisher = exports.TestPublisher = exports.getHttpCertConfiguration = exports.getHttpProxyConfiguration = exports.findMatch = exports.filter = exports.match = exports.tool = exports.execSync = exports.exec = exports.execAsync = exports.rmRF = exports.legacyFindFiles = exports.find = exports.retry = exports.mv = exports.cp = exports.ls = exports.which = exports.resolve = exports.mkdirP = exports.popd = exports.pushd = exports.cd = exports.checkPath = exports.cwd = exports.getAgentMode = exports.getPlatform = exports.osType = exports.writeFile = exports.exist = exports.stats = exports.debug = exports.error = exports.warning = exports.command = exports.setTaskVariable = exports.getTaskVariable = exports.getSecureFileTicket = exports.getSecureFileName = exports.getEndpointAuthorization = exports.getEndpointAuthorizationParameterRequired = exports.getEndpointAuthorizationParameter = exports.getEndpointAuthorizationSchemeRequired = exports.getEndpointAuthorizationScheme = exports.getEndpointDataParameterRequired = exports.getEndpointDataParameter = exports.getEndpointUrlRequired = exports.getEndpointUrl = exports.getPathInputRequired = exports.getPathInput = exports.filePathSupplied = exports.getDelimitedInput = exports.getBoolFeatureFlag = exports.getBoolInput = exports.getInputRequired = exports.getInput = exports.setSecret = exports.setVariable = exports.getVariables = exports.assertAgent = exports.getVariable = exports.loc = exports.setResourcePath = exports.setResult = exports.setErrStream = exports.setStdStream = exports.AgentHostedMode = exports.Platform = exports.FieldType = exports.ArtifactType = exports.IssueType = exports.TaskState = exports.TaskResult = void 0;
+exports.updateReleaseName = exports.addBuildTag = exports.updateBuildNumber = exports.uploadBuildLog = exports.associateArtifact = exports.uploadArtifact = exports.logIssue = exports.logDetail = exports.setProgress = exports.setEndpoint = exports.addAttachment = exports.uploadSummary = exports.prependPath = exports.uploadFile = exports.CodeCoverageEnabler = exports.CodeCoveragePublisher = exports.TestPublisher = exports.getHttpCertConfiguration = exports.getHttpProxyConfiguration = exports.findMatch = exports.filter = exports.match = exports.tool = exports.execSync = exports.exec = exports.execAsync = exports.rmRF = exports.legacyFindFiles = exports.find = exports.retry = exports.mv = exports.cp = exports.ls = exports.which = exports.resolve = exports.mkdirP = exports.popd = exports.pushd = exports.cd = exports.checkPath = exports.cwd = exports.getAgentMode = exports.getNodeMajorVersion = exports.getPlatform = exports.osType = exports.writeFile = exports.exist = exports.stats = exports.debug = exports.error = exports.warning = exports.command = exports.setTaskVariable = exports.getTaskVariable = exports.getSecureFileTicket = exports.getSecureFileName = exports.getEndpointAuthorization = exports.getEndpointAuthorizationParameterRequired = exports.getEndpointAuthorizationParameter = exports.getEndpointAuthorizationSchemeRequired = exports.getEndpointAuthorizationScheme = exports.getEndpointDataParameterRequired = exports.getEndpointDataParameter = exports.getEndpointUrlRequired = exports.getEndpointUrl = exports.getPathInputRequired = exports.getPathInput = exports.filePathSupplied = exports.getDelimitedInput = exports.getBoolFeatureFlag = exports.getBoolInput = exports.getInputRequired = exports.getInput = exports.setSecret = exports.setVariable = exports.getVariables = exports.assertAgent = exports.getVariable = exports.loc = exports.setResourcePath = exports.setResult = exports.setErrStream = exports.setStdStream = exports.AgentHostedMode = exports.Platform = exports.FieldType = exports.ArtifactType = exports.IssueType = exports.TaskState = exports.TaskResult = void 0;
 var shell = __nccwpck_require__(3516);
 var childProcess = __nccwpck_require__(2081);
 var fs = __nccwpck_require__(7147);
@@ -3382,6 +3132,23 @@ function getPlatform() {
     }
 }
 exports.getPlatform = getPlatform;
+/**
+ * Resolves major version of Node.js engine used by the agent.
+ * @returns {Number} Node's major version.
+ */
+function getNodeMajorVersion() {
+    var _a;
+    var version = (_a = process === null || process === void 0 ? void 0 : process.versions) === null || _a === void 0 ? void 0 : _a.node;
+    if (!version) {
+        throw new Error(exports.loc('LIB_UndefinedNodeVersion'));
+    }
+    var parts = version.split('.').map(Number);
+    if (parts.length < 1) {
+        return NaN;
+    }
+    return parts[0];
+}
+exports.getNodeMajorVersion = getNodeMajorVersion;
 /**
  * Return hosted type of Agent
  * @returns {AgentHostedMode}
@@ -22844,6 +22611,256 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
+/***/ 8021:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const taskLib = __importStar(__nccwpck_require__(347));
+const toolLib = __importStar(__nccwpck_require__(3681));
+const msstoreconfigurator = __importStar(__nccwpck_require__(5205));
+const fs = __importStar(__nccwpck_require__(7147));
+const Version = 'version';
+class AzurePipeline {
+    debug(message) {
+        taskLib.debug(message);
+    }
+    addPath(p) {
+        taskLib.prependPath(p);
+    }
+    mkdirP(p) {
+        return __awaiter(this, void 0, void 0, function* () {
+            taskLib.mkdirP(p);
+        });
+    }
+    downloadTool(url) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return toolLib.downloadTool(url);
+        });
+    }
+    extractTar(archivePath, dest) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return toolLib.extractTar(archivePath, dest);
+        });
+    }
+    extractZip(archivePath, dest) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return toolLib.extractZip(archivePath, dest);
+        });
+    }
+    rmRF(p) {
+        return __awaiter(this, void 0, void 0, function* () {
+            taskLib.rmRF(p);
+        });
+    }
+    exec(command, args) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return taskLib.exec(command, args);
+        });
+    }
+    moveSync(downloadPath, toolPath) {
+        this.rmRF(toolPath);
+        fs.renameSync(downloadPath, toolPath);
+    }
+}
+function run() {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            yield msstoreconfigurator
+                .getConfig(taskLib.getInput(Version) || 'latest')
+                .configure(new AzurePipeline());
+        }
+        catch (err) {
+            if (err instanceof Error)
+                taskLib.setResult(taskLib.TaskResult.Failed, err.message);
+        }
+    });
+}
+run();
+
+
+/***/ }),
+
+/***/ 5205:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.binPath = exports.MSStoreCLIConfigurator = exports.getConfig = void 0;
+const path = __importStar(__nccwpck_require__(1017));
+const os = __importStar(__nccwpck_require__(2037));
+const uuid_1 = __nccwpck_require__(5840);
+const fs = __importStar(__nccwpck_require__(7147));
+function getConfig(version) {
+    return new MSStoreCLIConfigurator(version || 'latest');
+}
+exports.getConfig = getConfig;
+class MSStoreCLIConfigurator {
+    constructor(version) {
+        this.version = version;
+    }
+    configure(pipeline) {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.validate();
+            let platform;
+            let extension;
+            if (process.platform === 'win32') {
+                platform = 'win';
+                extension = '.zip';
+            }
+            else if (process.platform === 'darwin') {
+                platform = 'osx';
+                extension = '.tar.gz';
+            }
+            else if (process.platform === 'linux') {
+                platform = 'linux';
+                extension = '.tar.gz';
+            }
+            else {
+                throw new Error(`Unsupported platform: ${process.platform}`);
+            }
+            let versionString;
+            if (this.version === 'latest') {
+                versionString = `latest/download`;
+            }
+            else {
+                versionString = `download/${this.version}`;
+            }
+            const downloadURL = `https://github.com/microsoft/msstore-cli/releases/${versionString}/MSStoreCLI-${platform}-${process.arch}${extension}`;
+            pipeline.debug(`Downloading tool from ${downloadURL}`);
+            let downloadPath = null;
+            let archivePath = null;
+            const randomDir = (0, uuid_1.v4)();
+            const tempDir = path.join(os.tmpdir(), 'tmp', 'runner', randomDir);
+            pipeline.debug(`Creating tempdir ${tempDir}`);
+            yield pipeline.mkdirP(tempDir);
+            downloadPath = yield pipeline.downloadTool(downloadURL);
+            let name;
+            if (process.platform === 'win32') {
+                name = 'msstore.exe';
+            }
+            else {
+                name = 'msstore';
+            }
+            if (extension === '.tar.gz') {
+                archivePath = yield pipeline.extractTar(downloadPath, tempDir);
+            }
+            else {
+                archivePath = yield pipeline.extractZip(downloadPath, tempDir);
+            }
+            yield this.moveToPath(archivePath, name, pipeline);
+            return pipeline.rmRF(tempDir);
+        });
+    }
+    moveToPath(downloadPath, name, pipeline) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const toolPath = binPath();
+            yield pipeline.mkdirP(toolPath);
+            const dest = path.join(toolPath, name);
+            if (!fs.existsSync(dest)) {
+                pipeline.moveSync(downloadPath, toolPath);
+            }
+            if (process.platform !== 'win32') {
+                yield pipeline.exec('chmod', ['+x', dest]);
+            }
+            pipeline.addPath(toolPath);
+        });
+    }
+    validate() {
+        if (process.platform !== 'win32' &&
+            process.platform !== 'darwin' &&
+            process.platform !== 'linux') {
+            throw new Error(`Unsupported platform: ${process.platform}`);
+        }
+    }
+}
+exports.MSStoreCLIConfigurator = MSStoreCLIConfigurator;
+function binPath() {
+    let baseLocation;
+    if (process.platform === 'win32') {
+        baseLocation = process.env['USERPROFILE'] || 'C:\\';
+    }
+    else {
+        if (process.platform === 'darwin') {
+            baseLocation = '/Users';
+        }
+        else {
+            baseLocation = '/home';
+        }
+    }
+    return path.join(baseLocation, os.userInfo().username, 'msstorecli');
+}
+exports.binPath = binPath;
+
+
+/***/ }),
+
 /***/ 9491:
 /***/ ((module) => {
 
@@ -23026,7 +23043,7 @@ module.exports = JSON.parse('{"name":"azure-pipelines-tool-lib","version":"2.0.7
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
 /******/ 	// This entry module is referenced by other modules so it can't be inlined
-/******/ 	var __webpack_exports__ = __nccwpck_require__(7896);
+/******/ 	var __webpack_exports__ = __nccwpck_require__(8021);
 /******/ 	module.exports = __webpack_exports__;
 /******/ 	
 /******/ })()
