@@ -3,7 +3,7 @@ import * as assert from 'assert'
 import * as ttm from 'azure-pipelines-task-lib/mock-test'
 import {test} from '@jest/globals'
 
-test('Sample task tests', function () {
+test('Sample task tests', async function () {
   var testPath = path.join(__dirname, '..', 'lib', '__tests__', 'success.js')
   let taskJsonPath = path.join(
     __dirname,
@@ -13,7 +13,7 @@ test('Sample task tests', function () {
   )
   let tr: ttm.MockTestRunner = new ttm.MockTestRunner(testPath, taskJsonPath)
 
-  tr.run()
+  await tr.runAsync()
   console.log(tr.succeeded)
   assert.equal(tr.succeeded, true, 'should have succeeded')
   assert.equal(tr.warningIssues.length, 0, 'should have no warnings')
@@ -40,4 +40,4 @@ test('Sample task tests', function () {
       'should have prepended msstorecli'
     )
   }
-})
+}, 60000)
