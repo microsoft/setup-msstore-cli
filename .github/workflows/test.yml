@@ -17,7 +17,7 @@ jobs:
           npm install
       - run: |
           npm run all
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: vsix
           path: ms-aps-msstorecli.microsoft-store-developer-cli-task-*.vsix
