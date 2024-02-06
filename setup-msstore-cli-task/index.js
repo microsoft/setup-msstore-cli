@@ -40,7 +40,7 @@ var IssueSource;
 //-----------------------------------------------------
 // async await needs generators in node 4.x+
 if (semver.lt(process.versions.node, '4.2.0')) {
-    _warning('Tasks require a new agent.  Upgrade your agent or node to 4.2.0 or later');
+    _warning('Tasks require a new agent.  Upgrade your agent or node to 4.2.0 or later', IssueSource.TaskInternal);
 }
 //-----------------------------------------------------
 // String convenience
@@ -131,7 +131,7 @@ function _loadLocStrings(resourceFile, culture) {
         }
     }
     else {
-        _warning('LIB_ResourceFile does not exist');
+        _warning('LIB_ResourceFile does not exist', IssueSource.TaskInternal);
     }
     return locStrings;
 }
@@ -166,7 +166,7 @@ function _setResourcePath(path, ignoreWarnings) {
             _debug(_loc('LIB_ResourceFileAlreadySet', path));
         }
         else {
-            _warning(_loc('LIB_ResourceFileAlreadySet', path));
+            _warning(_loc('LIB_ResourceFileAlreadySet', path), IssueSource.TaskInternal);
         }
     }
 }
@@ -200,7 +200,7 @@ function _loc(key) {
     }
     else {
         if (Object.keys(_resourceFiles).length <= 0) {
-            _warning("Resource file haven't been set, can't find loc string for key: " + key);
+            _warning("Resource file haven't been set, can't find loc string for key: " + key, IssueSource.TaskInternal);
         }
         else {
             _warning("Can't find loc string for key: " + key);
@@ -3691,7 +3691,7 @@ module.exports = v4;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.updateReleaseName = exports.addBuildTag = exports.updateBuildNumber = exports.uploadBuildLog = exports.associateArtifact = exports.uploadArtifact = exports.logIssue = exports.logDetail = exports.setProgress = exports.setEndpoint = exports.addAttachment = exports.uploadSummary = exports.prependPath = exports.uploadFile = exports.CodeCoverageEnabler = exports.CodeCoveragePublisher = exports.TestPublisher = exports.getHttpCertConfiguration = exports.getHttpProxyConfiguration = exports.findMatch = exports.filter = exports.match = exports.tool = exports.execSync = exports.exec = exports.execAsync = exports.rmRF = exports.legacyFindFiles = exports.find = exports.retry = exports.mv = exports.cp = exports.ls = exports.which = exports.resolve = exports.mkdirP = exports.popd = exports.pushd = exports.cd = exports.checkPath = exports.cwd = exports.getAgentMode = exports.getNodeMajorVersion = exports.getPlatform = exports.osType = exports.writeFile = exports.exist = exports.stats = exports.debug = exports.error = exports.warning = exports.command = exports.setTaskVariable = exports.getTaskVariable = exports.getSecureFileTicket = exports.getSecureFileName = exports.getEndpointAuthorization = exports.getEndpointAuthorizationParameterRequired = exports.getEndpointAuthorizationParameter = exports.getEndpointAuthorizationSchemeRequired = exports.getEndpointAuthorizationScheme = exports.getEndpointDataParameterRequired = exports.getEndpointDataParameter = exports.getEndpointUrlRequired = exports.getEndpointUrl = exports.getPathInputRequired = exports.getPathInput = exports.filePathSupplied = exports.getDelimitedInput = exports.getBoolFeatureFlag = exports.getBoolInput = exports.getInputRequired = exports.getInput = exports.setSecret = exports.setVariable = exports.getVariables = exports.assertAgent = exports.getVariable = exports.loc = exports.setResourcePath = exports.setResult = exports.setErrStream = exports.setStdStream = exports.AgentHostedMode = exports.Platform = exports.IssueSource = exports.FieldType = exports.ArtifactType = exports.IssueType = exports.TaskState = exports.TaskResult = void 0;
+exports.updateReleaseName = exports.addBuildTag = exports.updateBuildNumber = exports.uploadBuildLog = exports.associateArtifact = exports.uploadArtifact = exports.logIssue = exports.logDetail = exports.setProgress = exports.setEndpoint = exports.addAttachment = exports.uploadSummary = exports.prependPath = exports.uploadFile = exports.CodeCoverageEnabler = exports.CodeCoveragePublisher = exports.TestPublisher = exports.getHttpCertConfiguration = exports.getHttpProxyConfiguration = exports.findMatch = exports.filter = exports.match = exports.tool = exports.execSync = exports.exec = exports.execAsync = exports.rmRF = exports.legacyFindFiles = exports.find = exports.retry = exports.mv = exports.cp = exports.ls = exports.which = exports.resolve = exports.mkdirP = exports.popd = exports.pushd = exports.cd = exports.checkPath = exports.cwd = exports.getAgentMode = exports.getNodeMajorVersion = exports.getPlatform = exports.osType = exports.writeFile = exports.exist = exports.stats = exports.debug = exports.error = exports.warning = exports.command = exports.setTaskVariable = exports.getTaskVariable = exports.getSecureFileTicket = exports.getSecureFileName = exports.getEndpointAuthorization = exports.getEndpointAuthorizationParameterRequired = exports.getEndpointAuthorizationParameter = exports.getEndpointAuthorizationSchemeRequired = exports.getEndpointAuthorizationScheme = exports.getEndpointDataParameterRequired = exports.getEndpointDataParameter = exports.getEndpointUrlRequired = exports.getEndpointUrl = exports.getPathInputRequired = exports.getPathInput = exports.filePathSupplied = exports.getDelimitedInput = exports.getPipelineFeature = exports.getBoolFeatureFlag = exports.getBoolInput = exports.getInputRequired = exports.getInput = exports.setSecret = exports.setVariable = exports.getVariables = exports.assertAgent = exports.getVariable = exports.loc = exports.setResourcePath = exports.setResult = exports.setErrStream = exports.setStdStream = exports.AgentHostedMode = exports.Platform = exports.IssueSource = exports.FieldType = exports.ArtifactType = exports.IssueType = exports.TaskState = exports.TaskResult = void 0;
 var shell = __nccwpck_require__(3516);
 var childProcess = __nccwpck_require__(2081);
 var fs = __nccwpck_require__(7147);
@@ -3759,10 +3759,10 @@ function setResult(result, message, done) {
     exports.debug('task result: ' + TaskResult[result]);
     // add an error issue
     if (result == TaskResult.Failed && message) {
-        exports.error(message);
+        exports.error(message, exports.IssueSource.TaskInternal);
     }
     else if (result == TaskResult.SucceededWithIssues && message) {
-        exports.warning(message);
+        exports.warning(message, exports.IssueSource.TaskInternal);
     }
     // task.complete
     var properties = { 'result': TaskResult[result] };
@@ -3777,7 +3777,7 @@ exports.setResult = setResult;
 //
 process.on('uncaughtException', function (err) {
     setResult(TaskResult.Failed, exports.loc('LIB_UnhandledEx', err.message));
-    exports.error(String(err.stack));
+    exports.error(String(err.stack), im.IssueSource.TaskInternal);
 });
 //
 // Catching unhandled rejections from promises and rethrowing them as exceptions
@@ -3931,10 +3931,11 @@ function getBoolInput(name, required) {
 exports.getBoolInput = getBoolInput;
 /**
  * Gets the value of an feature flag and converts to a bool.
- *
+ * @IMPORTANT This method is only for internal Microsoft development. Do not use it for external tasks.
  * @param     name     name of the feature flag to get.
  * @param     defaultValue default value of the feature flag in case it's not found in env. (optional. Default value = false)
  * @returns   boolean
+ * @deprecated Don't use this for new development. Use getPipelineFeature instead.
  */
 function getBoolFeatureFlag(ffName, defaultValue) {
     if (defaultValue === void 0) { defaultValue = false; }
@@ -3947,6 +3948,24 @@ function getBoolFeatureFlag(ffName, defaultValue) {
     return ffValue.toLowerCase() === "true";
 }
 exports.getBoolFeatureFlag = getBoolFeatureFlag;
+/**
+ * Gets the value of an task feature and converts to a bool.
+ * @IMPORTANT This method is only for internal Microsoft development. Do not use it for external tasks.
+ * @param     name     name of the feature to get.
+ * @returns   boolean
+ */
+function getPipelineFeature(featureName) {
+    var variableName = im._getVariableKey("DistributedTask.Tasks." + featureName);
+    var featureValue = process.env[variableName];
+    if (!featureValue) {
+        exports.debug("Feature '" + featureName + "' not found. Returning false as default.");
+        return false;
+    }
+    var boolValue = featureValue.toLowerCase() === "true";
+    exports.debug("Feature '" + featureName + "' = '" + featureValue + "'. Processed as '" + boolValue + "'.");
+    return boolValue;
+}
+exports.getPipelineFeature = getPipelineFeature;
 /**
  * Gets the value of an input and splits the value using a delimiter (space, comma, etc).
  * Empty values are removed.  This function is useful for splitting an input containing a simple
@@ -4399,7 +4418,7 @@ function mkdirP(p) {
     var testDir = p;
     while (true) {
         // validate the loop is not out of control
-        if (stack.length >= (process.env['TASKLIB_TEST_MKDIRP_FAILSAFE'] || 1000)) {
+        if (stack.length >= Number(process.env['TASKLIB_TEST_MKDIRP_FAILSAFE'] || 1000)) {
             // let the framework throw
             exports.debug('loop is out of control');
             fs.mkdirSync(p);
@@ -4506,7 +4525,7 @@ function cp(source, dest, options, continueOnError, retryCount) {
         catch (e) {
             if (retryCount <= 0) {
                 if (continueOnError) {
-                    exports.warning(e);
+                    exports.warning(e, exports.IssueSource.TaskInternal);
                     break;
                 }
                 else {
@@ -4556,7 +4575,7 @@ function retry(func, args, retryOptions) {
         catch (e) {
             if (retryOptions.retryCount <= 0) {
                 if (retryOptions.continueOnError) {
-                    exports.warning(e);
+                    exports.warning(e, exports.IssueSource.TaskInternal);
                     break;
                 }
                 else {
@@ -4656,7 +4675,7 @@ function find(findPath, options) {
             }
             catch (err) {
                 if (err.code == 'ENOENT' && options.skipMissingFiles) {
-                    exports.warning("No such file or directory: \"" + item.path + "\" - skipping.");
+                    exports.warning("No such file or directory: \"" + item.path + "\" - skipping.", exports.IssueSource.TaskInternal);
                     return "continue";
                 }
                 throw err;
@@ -5762,7 +5781,7 @@ exports.ToolRunner = trm.ToolRunner;
 //-----------------------------------------------------
 // async await needs generators in node 4.x+
 if (semver.lt(process.versions.node, '4.2.0')) {
-    exports.warning('Tasks require a new agent.  Upgrade your agent or node to 4.2.0 or later');
+    exports.warning('Tasks require a new agent.  Upgrade your agent or node to 4.2.0 or later', exports.IssueSource.TaskInternal);
 }
 //-------------------------------------------------------------------
 // Populate the vault with sensitive data.  Inputs and Endpoints
@@ -9540,7 +9559,7 @@ var bind = __nccwpck_require__(8334);
 var GetIntrinsic = __nccwpck_require__(4538);
 var setFunctionLength = __nccwpck_require__(4056);
 
-var $TypeError = GetIntrinsic('%TypeError%');
+var $TypeError = __nccwpck_require__(6361);
 var $apply = GetIntrinsic('%Function.prototype.apply%');
 var $call = GetIntrinsic('%Function.prototype.call%');
 var $reflectApply = GetIntrinsic('%Reflect.apply%', true) || bind.call($call, $apply);
@@ -9622,8 +9641,8 @@ if ($defineProperty) {
 	}
 }
 
-var $SyntaxError = GetIntrinsic('%SyntaxError%');
-var $TypeError = GetIntrinsic('%TypeError%');
+var $SyntaxError = __nccwpck_require__(5474);
+var $TypeError = __nccwpck_require__(6361);
 
 var gopd = __nccwpck_require__(8501);
 
@@ -9674,6 +9693,90 @@ module.exports = function defineDataProperty(
 		throw new $SyntaxError('This environment does not support defining a property as non-configurable, non-writable, or non-enumerable.');
 	}
 };
+
+
+/***/ }),
+
+/***/ 1933:
+/***/ ((module) => {
+
+"use strict";
+
+
+/** @type {import('./eval')} */
+module.exports = EvalError;
+
+
+/***/ }),
+
+/***/ 8015:
+/***/ ((module) => {
+
+"use strict";
+
+
+/** @type {import('.')} */
+module.exports = Error;
+
+
+/***/ }),
+
+/***/ 4415:
+/***/ ((module) => {
+
+"use strict";
+
+
+/** @type {import('./range')} */
+module.exports = RangeError;
+
+
+/***/ }),
+
+/***/ 6279:
+/***/ ((module) => {
+
+"use strict";
+
+
+/** @type {import('./ref')} */
+module.exports = ReferenceError;
+
+
+/***/ }),
+
+/***/ 5474:
+/***/ ((module) => {
+
+"use strict";
+
+
+/** @type {import('./syntax')} */
+module.exports = SyntaxError;
+
+
+/***/ }),
+
+/***/ 6361:
+/***/ ((module) => {
+
+"use strict";
+
+
+/** @type {import('./type')} */
+module.exports = TypeError;
+
+
+/***/ }),
+
+/***/ 5065:
+/***/ ((module) => {
+
+"use strict";
+
+
+/** @type {import('./uri')} */
+module.exports = URIError;
 
 
 /***/ }),
@@ -10174,9 +10277,15 @@ module.exports = Function.prototype.bind || implementation;
 
 var undefined;
 
-var $SyntaxError = SyntaxError;
+var $Error = __nccwpck_require__(8015);
+var $EvalError = __nccwpck_require__(1933);
+var $RangeError = __nccwpck_require__(4415);
+var $ReferenceError = __nccwpck_require__(6279);
+var $SyntaxError = __nccwpck_require__(5474);
+var $TypeError = __nccwpck_require__(6361);
+var $URIError = __nccwpck_require__(5065);
+
 var $Function = Function;
-var $TypeError = TypeError;
 
 // eslint-disable-next-line consistent-return
 var getEvalledConstructor = function (expressionSyntax) {
@@ -10228,6 +10337,7 @@ var needsEval = {};
 var TypedArray = typeof Uint8Array === 'undefined' || !getProto ? undefined : getProto(Uint8Array);
 
 var INTRINSICS = {
+	__proto__: null,
 	'%AggregateError%': typeof AggregateError === 'undefined' ? undefined : AggregateError,
 	'%Array%': Array,
 	'%ArrayBuffer%': typeof ArrayBuffer === 'undefined' ? undefined : ArrayBuffer,
@@ -10248,9 +10358,9 @@ var INTRINSICS = {
 	'%decodeURIComponent%': decodeURIComponent,
 	'%encodeURI%': encodeURI,
 	'%encodeURIComponent%': encodeURIComponent,
-	'%Error%': Error,
+	'%Error%': $Error,
 	'%eval%': eval, // eslint-disable-line no-eval
-	'%EvalError%': EvalError,
+	'%EvalError%': $EvalError,
 	'%Float32Array%': typeof Float32Array === 'undefined' ? undefined : Float32Array,
 	'%Float64Array%': typeof Float64Array === 'undefined' ? undefined : Float64Array,
 	'%FinalizationRegistry%': typeof FinalizationRegistry === 'undefined' ? undefined : FinalizationRegistry,
@@ -10272,8 +10382,8 @@ var INTRINSICS = {
 	'%parseInt%': parseInt,
 	'%Promise%': typeof Promise === 'undefined' ? undefined : Promise,
 	'%Proxy%': typeof Proxy === 'undefined' ? undefined : Proxy,
-	'%RangeError%': RangeError,
-	'%ReferenceError%': ReferenceError,
+	'%RangeError%': $RangeError,
+	'%ReferenceError%': $ReferenceError,
 	'%Reflect%': typeof Reflect === 'undefined' ? undefined : Reflect,
 	'%RegExp%': RegExp,
 	'%Set%': typeof Set === 'undefined' ? undefined : Set,
@@ -10290,7 +10400,7 @@ var INTRINSICS = {
 	'%Uint8ClampedArray%': typeof Uint8ClampedArray === 'undefined' ? undefined : Uint8ClampedArray,
 	'%Uint16Array%': typeof Uint16Array === 'undefined' ? undefined : Uint16Array,
 	'%Uint32Array%': typeof Uint32Array === 'undefined' ? undefined : Uint32Array,
-	'%URIError%': URIError,
+	'%URIError%': $URIError,
 	'%WeakMap%': typeof WeakMap === 'undefined' ? undefined : WeakMap,
 	'%WeakRef%': typeof WeakRef === 'undefined' ? undefined : WeakRef,
 	'%WeakSet%': typeof WeakSet === 'undefined' ? undefined : WeakSet
@@ -10332,6 +10442,7 @@ var doEval = function doEval(name) {
 };
 
 var LEGACY_ALIASES = {
+	__proto__: null,
 	'%ArrayBufferPrototype%': ['ArrayBuffer', 'prototype'],
 	'%ArrayPrototype%': ['Array', 'prototype'],
 	'%ArrayProto_entries%': ['Array', 'prototype', 'entries'],
@@ -17113,7 +17224,7 @@ var define = __nccwpck_require__(4564);
 var hasDescriptors = __nccwpck_require__(176)();
 var gOPD = __nccwpck_require__(8501);
 
-var $TypeError = GetIntrinsic('%TypeError%');
+var $TypeError = __nccwpck_require__(6361);
 var $floor = GetIntrinsic('%Math.floor%');
 
 /** @typedef {(...args: unknown[]) => unknown} Func */
@@ -21047,7 +21158,7 @@ var GetIntrinsic = __nccwpck_require__(4538);
 var callBound = __nccwpck_require__(8803);
 var inspect = __nccwpck_require__(504);
 
-var $TypeError = GetIntrinsic('%TypeError%');
+var $TypeError = __nccwpck_require__(6361);
 var $WeakMap = GetIntrinsic('%WeakMap%', true);
 var $Map = GetIntrinsic('%Map%', true);
 
@@ -21059,13 +21170,10 @@ var $mapSet = callBound('Map.prototype.set', true);
 var $mapHas = callBound('Map.prototype.has', true);
 
 /*
- * This function traverses the list returning the node corresponding to the
- * given key.
- *
- * That node is also moved to the head of the list, so that if it's accessed
- * again we don't need to traverse the whole list. By doing so, all the recently
- * used nodes can be accessed relatively quickly.
- */
+* This function traverses the list returning the node corresponding to the given key.
+*
+* That node is also moved to the head of the list, so that if it's accessed again we don't need to traverse the whole list. By doing so, all the recently used nodes can be accessed relatively quickly.
+*/
 var listGetNode = function (list, key) { // eslint-disable-line consistent-return
 	for (var prev = list, curr; (curr = prev.next) !== null; prev = curr) {
 		if (curr.key === key) {
@@ -21152,11 +21260,7 @@ module.exports = function getSideChannel() {
 				$mapSet($m, key, value);
 			} else {
 				if (!$o) {
-					/*
-					 * Initialize the linked list as an empty node, so that we don't have
-					 * to special-case handling of the first node: we can always refer to
-					 * it as (previous node).next, instead of something like (list).head
-					 */
+					// Initialize the linked list as an empty node, so that we don't have to special-case handling of the first node: we can always refer to it as (previous node).next, instead of something like (list).head
 					$o = { key: {}, next: null };
 				}
 				listSet($o, key, value);
