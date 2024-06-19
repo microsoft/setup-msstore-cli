@@ -11,8 +11,7 @@ test('Sample task tests', async function () {
     'setup-msstore-cli-task',
     'task.json'
   )
-  let tr: ttm.MockTestRunner = new ttm.MockTestRunner()
-  await tr.LoadAsync(testPath, taskJsonPath)
+  let tr: ttm.MockTestRunner = new ttm.MockTestRunner(testPath, taskJsonPath)
 
   await tr.runAsync()
   console.log(tr.succeeded)

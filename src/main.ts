@@ -37,7 +37,7 @@ class GitHubPipeline implements msstoreconfigurator.IPipeline {
   }
 }
 
-async function run(): Promise<void> {
+export async function run(): Promise<void> {
   try {
     await msstoreconfigurator
       .getConfig(core.getInput(Version))
