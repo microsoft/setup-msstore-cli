@@ -10,9 +10,10 @@
     "version": {
         "Major": 0,
         "Minor": 1,
-        "Patch": 5
+        "Patch": 6
     },
     "instanceNameFormat": "Use Microsoft Store Developer CLI $(version)",
+    "minimumAgentVersion": "2.144.0",
     "inputs": [
         {
             "name": "version",
@@ -25,6 +26,9 @@
     ],
     "execution": {
         "Node10": {
+            "target": "index.js"
+        },
+        "Node16": {
             "target": "index.js"
         }
     }
