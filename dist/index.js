@@ -32469,7 +32469,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.run = void 0;
+exports.run = run;
 const core = __importStar(__nccwpck_require__(2186));
 const tc = __importStar(__nccwpck_require__(7784));
 const exec = __importStar(__nccwpck_require__(1514));
@@ -32531,7 +32531,6 @@ function run() {
         }
     });
 }
-exports.run = run;
 run();
 
 
@@ -32575,7 +32574,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.binPath = exports.MSStoreCLIConfigurator = exports.getConfig = void 0;
+exports.MSStoreCLIConfigurator = void 0;
+exports.getConfig = getConfig;
+exports.binPath = binPath;
 const path = __importStar(__nccwpck_require__(1017));
 const os = __importStar(__nccwpck_require__(2037));
 const uuid_1 = __nccwpck_require__(5840);
@@ -32583,7 +32584,6 @@ const fs = __importStar(__nccwpck_require__(7147));
 function getConfig(version) {
     return new MSStoreCLIConfigurator(version || 'latest');
 }
-exports.getConfig = getConfig;
 class MSStoreCLIConfigurator {
     constructor(version) {
         this.version = version;
@@ -32679,7 +32679,6 @@ function binPath() {
     }
     return path.join(baseLocation, os.userInfo().username, 'msstorecli');
 }
-exports.binPath = binPath;
 
 
 /***/ }),

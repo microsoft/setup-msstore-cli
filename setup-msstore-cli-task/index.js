@@ -13731,7 +13731,10 @@ module.exports = function inspect_(obj, options, depth, seen) {
     if (typeof window !== 'undefined' && obj === window) {
         return '{ [object Window] }';
     }
-    if (obj === global) {
+    if (
+        (typeof globalThis !== 'undefined' && obj === globalThis)
+        || (typeof global !== 'undefined' && obj === global)
+    ) {
         return '{ [object globalThis] }';
     }
     if (!isDate(obj) && !isRegExp(obj)) {
@@ -16261,6 +16264,7 @@ var parseValues = function parseQueryStringValues(str, options) {
     var obj = { __proto__: null };
 
     var cleanStr = options.ignoreQueryPrefix ? str.replace(/^\?/, '') : str;
+    cleanStr = cleanStr.replace(/%5B/gi, '[').replace(/%5D/gi, ']');
     var limit = options.parameterLimit === Infinity ? undefined : options.parameterLimit;
     var parts = cleanStr.split(options.delimiter, limit);
     var skipIndex = -1; // Keep track of where the utf8 sentinel was found
@@ -16331,7 +16335,9 @@ var parseObject = function (chain, val, options, valuesParsed) {
         var root = chain[i];
 
         if (root === '[]' && options.parseArrays) {
-            obj = options.allowEmptyArrays && leaf === '' ? [] : [].concat(leaf);
+            obj = options.allowEmptyArrays && (leaf === '' || (options.strictNullHandling && leaf === null))
+                ? []
+                : [].concat(leaf);
         } else {
             obj = options.plainObjects ? Object.create(null) : {};
             var cleanRoot = root.charAt(0) === '[' && root.charAt(root.length - 1) === ']' ? root.slice(1, -1) : root;
@@ -23273,7 +23279,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.binPath = exports.MSStoreCLIConfigurator = exports.getConfig = void 0;
+exports.MSStoreCLIConfigurator = void 0;
+exports.getConfig = getConfig;
+exports.binPath = binPath;
 const path = __importStar(__nccwpck_require__(1017));
 const os = __importStar(__nccwpck_require__(2037));
 const uuid_1 = __nccwpck_require__(5840);
@@ -23281,7 +23289,6 @@ const fs = __importStar(__nccwpck_require__(7147));
 function getConfig(version) {
     return new MSStoreCLIConfigurator(version || 'latest');
 }
-exports.getConfig = getConfig;
 class MSStoreCLIConfigurator {
     constructor(version) {
         this.version = version;
@@ -23377,7 +23384,6 @@ function binPath() {
     }
     return path.join(baseLocation, os.userInfo().username, 'msstorecli');
 }
-exports.binPath = binPath;
 
 
 /***/ }),
