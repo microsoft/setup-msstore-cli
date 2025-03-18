@@ -69,9 +69,9 @@ extends:
           steps:
           - checkout: self
           - task: UseDotNet@2
-            displayName: Setup .NET 8
+            displayName: Setup .NET 9
             inputs:
-              version: 8.0.x
+              version: 9.0.x
           - bash: |
               MSSTORECLIPATH=$(node dist/index.js | grep "^::add-path::" | sed -e "s/^::add-path:://g")
               if [ "$(expr substr $(uname -s) 1 10)" != "MINGW64_NT" ]; then
