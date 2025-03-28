@@ -36,6 +36,14 @@
         },
         "thirdpartynotice": {
             "path": "licenses.txt"
+        },
+        "license": {
+            "path": "LICENSE"
+        }
+    },
+    "links":{
+        "license": {
+            "uri": "https://github.com/microsoft/setup-msstore-cli/blob/main/LICENSE"
         }
     },
     "files": [
