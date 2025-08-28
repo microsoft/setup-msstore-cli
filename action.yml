@@ -7,7 +7,7 @@ branding:
 inputs:
   version:
     required: false
-    description: "The version of the Microsoft Store CLI to be downloaded and configured (e.g. 'v0.2.0')."
+    description: "The version of the Microsoft Store CLI to be downloaded and configured (e.g. 'v0.3.0')."
     default: 'latest'
 runs:
   using: 'node20'
