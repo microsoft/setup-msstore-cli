@@ -9,7 +9,7 @@
     "author": "Microsoft",
     "version": {
         "Major": 0,
-        "Minor": 2,
+        "Minor": 3,
         "Patch": 0
     },
     "instanceNameFormat": "Use Microsoft Store Developer CLI $(version)",
