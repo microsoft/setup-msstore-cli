@@ -20,6 +20,9 @@ parameters:
     - name: Azure Pipelines
       image: macos-latest
       os: macOS
+  - name: DoEsrp
+    type: boolean
+    default: false
 
 extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
@@ -52,6 +55,37 @@ extends:
           displayName: Build
           env:
             RUNNER_TEMP: $(Agent.TempDirectory)
+        - ${{ if eq(parameters['DoEsrp'], 'true') }}:
+          - task: EsrpCodeSigning@5
+            displayName: ESRP CodeSigning - VSIX
+            inputs:
+              ConnectedServiceName: ${{ parameters.signingIdentity.serviceName }}
+              AppRegistrationClientId: ${{ parameters.signingIdentity.appId }}
+              AppRegistrationTenantId: ${{ parameters.signingIdentity.tenantId }}
+              AuthAKVName: ${{ parameters.signingIdentity.akvName }}
+              AuthCertName: ${{ parameters.signingIdentity.authCertName }}
+              AuthSignCertName: ${{ parameters.signingIdentity.signCertName }}
+              FolderPath: $(System.DefaultWorkingDirectory)
+              Pattern: '*.vsix'
+              signConfigType: inlineSignParams
+              inlineOperation: |-
+                [
+                  {
+                    "KeyCode": "CP-500813",
+                    "OperationCode": "AdoExtensionSign",
+                    "ToolName": "sign",
+                    "ToolVersion": "1.0",
+                    "Parameters": {}
+                  },
+                  {
+                    "KeyCode": "CP-500813",
+                    "OperationCode": "AdoExtensionVerify",
+                    "ToolName": "sign",
+                    "ToolVersion": "1.0",
+                    "Parameters": {}
+                  }
+                ]
+              SessionTimeout: 30
         - task: CopyFiles@2
           displayName: Copying VSIX
           inputs:
