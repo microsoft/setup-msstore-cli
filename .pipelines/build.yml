@@ -59,12 +59,12 @@ extends:
           - task: EsrpCodeSigning@5
             displayName: ESRP CodeSigning - VSIX
             inputs:
-              ConnectedServiceName: ${{ parameters.signingIdentity.serviceName }}
-              AppRegistrationClientId: ${{ parameters.signingIdentity.appId }}
-              AppRegistrationTenantId: ${{ parameters.signingIdentity.tenantId }}
-              AuthAKVName: ${{ parameters.signingIdentity.akvName }}
-              AuthCertName: ${{ parameters.signingIdentity.authCertName }}
-              AuthSignCertName: ${{ parameters.signingIdentity.signCertName }}
+              ConnectedServiceName: $(SigningServiceName)
+              AppRegistrationClientId: $(SigningAppId)
+              AppRegistrationTenantId: $(SigningTenantId)
+              AuthAKVName: $(SigningAKVName)
+              AuthCertName: $(SigningAuthCertName)
+              AuthSignCertName: $(SigningSignCertName)
               FolderPath: $(System.DefaultWorkingDirectory)
               Pattern: '*.vsix'
               signConfigType: inlineSignParams
